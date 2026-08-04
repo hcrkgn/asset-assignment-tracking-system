@@ -14,8 +14,17 @@ The system is used to manage company assets, employee assignments, maintenance r
 
 ## Project Status
 
-Stage 0 – Analysis and Design (In Progress)
+Stage 0 – Analysis and Design (Completed)
 
 ## Documentation
 
 Project documents are available in the `docs` folder.
+
+Included documents:
+
+- User Stories
+- ER Diagram
+- State Machine Diagram
+- Screen Flow
+- Architecture Decision Records (ADR)
+- Acceptance Criteria
