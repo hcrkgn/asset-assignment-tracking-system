@@ -15,6 +15,7 @@ The system is used to manage company assets, employee assignments, maintenance r
 ## Project Status
 
 Stage 0 – Analysis and Design (Completed)
+Stage 1 – Project Setup and Authentication (In Progress)
 
 ## Documentation
 
