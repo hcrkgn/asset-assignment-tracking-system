@@ -13,11 +13,17 @@ The system is used to manage company assets, employee assignments, maintenance r
 - Backend: Flask
 - Frontend: HTML, CSS, JavaScript
 - Database: MySQL
+- ORM: Flask-SQLAlchemy
+- Database Migration: Flask-Migrate
+- Authentication: Session-based authentication
+- Password Security: bcrypt
+- Testing: pytest
+- Code Quality: Ruff
 
 ## Project Status
 
-Stage 0 – Analysis and Design (Completed)
-Stage 1 – Project Setup and Authentication (In Progress)
+- Stage 0 – Analysis and Design (Completed)
+- Stage 1 – Project Setup and Authentication (In Progress)
 
 ## Documentation
 

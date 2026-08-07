@@ -1,11 +1,33 @@
 from datetime import datetime, timedelta
 
-from app.database.db import get_db_connection
+from app.database.db import db, get_db_connection
 
 
 MAX_FAILED_ATTEMPTS = 20
 LOCK_DURATION_MINUTES = 15
 
+class LoginAttempt(db.Model):
+    __tablename__ = "login_attempts"
+
+    Email = db.Column(
+        db.String(100),
+        primary_key=True
+    )
+
+    FailedAttempts = db.Column(
+        db.Integer,
+        nullable=False,
+        default=0
+    )
+
+    LockedUntil = db.Column(db.DateTime)
+
+    UpdatedAt = db.Column(
+    db.DateTime,
+    nullable=False,
+    server_default=db.func.current_timestamp(),
+    onupdate=db.func.current_timestamp()
+    )
 
 def is_login_locked(email):
     connection = get_db_connection()
