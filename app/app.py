@@ -6,26 +6,16 @@ from flask import Flask, flash, jsonify, redirect, render_template, request, ses
 from app.utils.security import check_password
 from flask_migrate import Migrate
 from app.database.db import db
-from app.models.role_model import Role
-from app.models.department_model import Department
-from app.models.user_model import User
-from app.models.category_model import Category
-from app.models.asset_model import Asset
-from app.models.assignment_model import Assignment
-from app.models.maintenance_model import Maintenance
-from app.models.inventory_model import Inventory
-from app.models.request_model import Request
-from app.models.location_model import Location
+from app.utils.auth import require_roles
 
 from app.models.login_attempt_model import (
     clear_login_attempts,
     is_login_locked,
     record_failed_login,
 )
-
 from app.models.user_model import get_user_by_email
-from app.utils.auth import require_roles
-from app.utils.security import check_password
+
+
 
 load_dotenv()
 
