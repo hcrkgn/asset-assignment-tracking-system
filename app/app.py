@@ -3,6 +3,19 @@ from datetime import timedelta
 
 from dotenv import load_dotenv
 from flask import Flask, flash, jsonify, redirect, render_template, request, session, url_for
+from app.utils.security import check_password
+from flask_migrate import Migrate
+from app.database.db import db
+from app.models.role_model import Role
+from app.models.department_model import Department
+from app.models.user_model import User
+from app.models.category_model import Category
+from app.models.asset_model import Asset
+from app.models.assignment_model import Assignment
+from app.models.maintenance_model import Maintenance
+from app.models.inventory_model import Inventory
+from app.models.request_model import Request
+from app.models.location_model import Location
 
 from app.models.login_attempt_model import (
     clear_login_attempts,
@@ -21,6 +34,20 @@ app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=30)
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
+app.config["SQLALCHEMY_DATABASE_URI"] = (
+    f"mysql+mysqlconnector://"
+    f"{os.getenv('MYSQL_USER')}:"
+    f"{os.getenv('MYSQL_PASSWORD')}@"
+    f"{os.getenv('MYSQL_HOST')}:3306/"
+    f"{os.getenv('MYSQL_DATABASE')}"
+)
+
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+db.init_app(app)
+migrate = Migrate(app, db)
+
 
 
 @app.route("/")
