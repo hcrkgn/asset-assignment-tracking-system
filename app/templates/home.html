@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>AATS | Ana Sayfa</title>
+</head>
+<body>
+    <h1>Hoş geldiniz, {{ session["user_name"] }}!</h1>
+    <p>Giriş başarılı.</p>
+
+<button id="session-check-button" type="button">
+    Oturumu Kontrol Et
+</button>
+
+<p id="session-result"></p>
+
+<script>
+    const button = document.getElementById("session-check-button");
+    const result = document.getElementById("session-result");
+
+    button.addEventListener("click", async () => {
+        const response = await fetch("/api/session", {
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        });
+
+        if (response.status === 401) {
+            const data = await response.json();
+
+            alert(data.message);
+            window.location.href = "/login";
+            return;
+        }
+
+        const data = await response.json();
+        result.textContent = `Aktif oturum: ${data.user_name}`;
+    });
+</script>
+
+    <form method="POST" action="{{ url_for('logout') }}">
+        <button type="submit">Çıkış Yap</button>
+    </form>
+</body>
+</html>

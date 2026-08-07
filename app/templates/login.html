@@ -2,27 +2,50 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Giriş Yap</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AATS | Giriş Yap</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 </head>
 <body>
-    <h1>Giriş Yap</h1>
+    <main class="login-page">
+        <section class="login-card">
+            <h1>AATS</h1>
+            <p class="subtitle">Asset and Assignment Tracking System</p>
 
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            {% for message in messages %}
-                <p style="color: red;">{{ message }}</p>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+            <h2>Giriş Yap</h2>
 
-    <form method="POST">
-        <label>E-posta</label>
-        <input type="email" name="email" required>
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <p class="error-message">{{ message }}</p>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 
-        <label>Şifre</label>
-        <input type="password" name="password" required>
+            <form method="POST">
+                <label for="email">E-posta</label>
+                <input
+                    id="email"
+                    type="email"
+                    name="email"
+                    placeholder="ornek@sirket.com"
+                    autocomplete="email"
+                    required
+                >
 
-        <button type="submit">Giriş yap</button>
-    </form>
+                <label for="password">Şifre</label>
+                <input
+                    id="password"
+                    type="password"
+                    name="password"
+                    placeholder="Şifrenizi girin"
+                    autocomplete="current-password"
+                    required
+                >
+
+                <button type="submit">Giriş Yap</button>
+            </form>
+        </section>
+    </main>
 </body>
 </html>

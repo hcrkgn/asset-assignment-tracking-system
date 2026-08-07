@@ -10,6 +10,11 @@ CREATE TABLE departments (
 );
 
 
+CREATE TABLE locations (
+    LocationID INT AUTO_INCREMENT PRIMARY KEY,
+    LocationName VARCHAR(100) NOT NULL UNIQUE
+);
+
 
 CREATE TABLE users (
     UserID INT AUTO_INCREMENT PRIMARY KEY,
@@ -33,12 +38,14 @@ CREATE TABLE assets (
     AssetID INT AUTO_INCREMENT PRIMARY KEY,
     AssetName VARCHAR(100) NOT NULL,
     CategoryID INT NOT NULL,
+    LocationID INT NOT NULL,
     SerialNumber VARCHAR(100) UNIQUE,
     Quantity INT DEFAULT 1,
     AssetType VARCHAR(50),
     Status VARCHAR(50) NOT NULL,
     PurchaseDate DATE,
-    FOREIGN KEY (CategoryID) REFERENCES categories(CategoryID)
+    FOREIGN KEY (CategoryID) REFERENCES categories(CategoryID),
+    FOREIGN KEY (LocationID) REFERENCES locations(LocationID)
 );
 
 
@@ -82,4 +89,12 @@ CREATE TABLE requests (
     Description TEXT,
     FOREIGN KEY (RequesterID) REFERENCES users(UserID),
     FOREIGN KEY (CategoryID) REFERENCES categories(CategoryID)
+);
+
+CREATE TABLE login_attempts (
+    Email VARCHAR(100) PRIMARY KEY,
+    FailedAttempts INT NOT NULL DEFAULT 0,
+    LockedUntil DATETIME NULL,
+    UpdatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP
 );

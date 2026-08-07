@@ -1,5 +1,7 @@
 # Asset and Assignment Tracking System
 
+[![CI](https://github.com/hcrkgn/asset-assignment-tracking-system/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/hcrkgn/asset-assignment-tracking-system/actions/workflows/ci.yml)
+
 ## About
 
 This project is developed as the Phase 2 internship program.
