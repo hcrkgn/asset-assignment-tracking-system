@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Assignments</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+
+  <body>
+    <h1>Assignments</h1>
+
+    <a href="{{ url_for('create_assignment') }}" class="btn btn-view">
+      Assign Asset
+    </a>
+
+    <br /><br />
+
+    <table border="1">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Asset ID</th>
+          <th>User ID</th>
+          <th>Assigned Date</th>
+          <th>Returned Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for assignment in assignments %}
+        <tr>
+          <td>{{ assignment.AssignmentID }}</td>
+          <td>{{ assignment.AssetID }}</td>
+          <td>{{ assignment.UserID }}</td>
+          <td>{{ assignment.AssignedDate }}</td>
+          <td>{{ assignment.ReturnedDate or "-" }}</td>
+          <td class="actions">
+            <a
+              href="{{ url_for('assignment_detail', assignment_id=assignment.AssignmentID) }}"
+              class="btn btn-view"
+            >
+              View
+            </a>
+            <a
+              href="{{ url_for('edit_assignment',
+                        assignment_id=assignment.AssignmentID) }}"
+              class="btn btn-edit"
+            >
+              Edit
+            </a>
+            {% if not assignment.ReturnedDate %}
+            <form
+              method="POST"
+              action="{{ url_for('return_assignment',
+                             assignment_id=assignment.AssignmentID) }}"
+              style="display: inline"
+            >
+              <button type="submit" class="btn btn-return">Return</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <br />
+
+    <a href="{{ url_for('home') }}"> Back to Home </a>
+  </body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Assign Asset</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <h1>Assign Asset</h1>
+
+    <form method="POST">
+
+        <label>Asset</label>
+        <select name="AssetID" required>
+            {% for asset in assets %}
+                <option value="{{ asset.AssetID }}">
+                    {{ asset.Code }} - {{ asset.AssetName }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <br><br>
+
+        <label>User</label>
+        <select name="UserID" required>
+            {% for user in users %}
+                <option value="{{ user.UserID }}">
+                    {{ user.Name }} - {{ user.Email }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <br><br>
+
+        <label>Assigned Date</label>
+        <input type="date"
+               name="AssignedDate"
+               required>
+
+        <br><br>
+
+        <button type="submit" class="btn btn-view">
+            Assign Asset
+        </button>
+
+    </form>
+
+    <br>
+
+    <a href="{{ url_for('assignments') }}">
+        Back to Assignments
+    </a>
+
+</body>
+</html>

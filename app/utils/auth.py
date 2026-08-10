@@ -11,7 +11,7 @@ def require_roles(*allowed_role_ids):
                 if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                     return jsonify({
                         "error": "session_expired",
-                        "message": "Oturumunuz sona erdi. Lütfen yeniden giriş yapın."
+                        "message": "Your session has expired. Please log in again."
                     }), 401
 
                 return redirect(url_for("login"))

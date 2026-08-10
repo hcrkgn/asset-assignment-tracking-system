@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AATS | Giriş Yap</title>
+    <title>AATS | Log in</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 </head>
 <body>
@@ -12,7 +12,7 @@
             <h1>AATS</h1>
             <p class="subtitle">Asset and Assignment Tracking System</p>
 
-            <h2>Giriş Yap</h2>
+            <h2>Log in</h2>
 
             {% with messages = get_flashed_messages() %}
                 {% if messages %}
@@ -23,27 +23,27 @@
             {% endwith %}
 
             <form method="POST">
-                <label for="email">E-posta</label>
+                <label for="email">Email</label>
                 <input
                     id="email"
                     type="email"
                     name="email"
-                    placeholder="ornek@sirket.com"
+                    placeholder="example@company.com"
                     autocomplete="email"
                     required
                 >
 
-                <label for="password">Şifre</label>
+                <label for="password">Password</label>
                 <input
                     id="password"
                     type="password"
                     name="password"
-                    placeholder="Şifrenizi girin"
+                    placeholder="Enter password"
                     autocomplete="current-password"
                     required
                 >
 
-                <button type="submit">Giriş Yap</button>
+                <button type="submit">Log in</button>
             </form>
         </section>
     </main>

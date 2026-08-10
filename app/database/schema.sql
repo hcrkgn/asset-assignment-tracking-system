@@ -33,18 +33,37 @@ CREATE TABLE categories (
     CategoryName VARCHAR(100) NOT NULL UNIQUE
 );
 
+CREATE TABLE brands (
+    BrandID INT AUTO_INCREMENT PRIMARY KEY,
+    BrandName VARCHAR(100) NOT NULL UNIQUE
+);
+
+
+CREATE TABLE models (
+    ModelID INT AUTO_INCREMENT PRIMARY KEY,
+    ModelName VARCHAR(100) NOT NULL UNIQUE
+);
+
 
 CREATE TABLE assets (
     AssetID INT AUTO_INCREMENT PRIMARY KEY,
+    Code VARCHAR(50) NOT NULL UNIQUE,
     AssetName VARCHAR(100) NOT NULL,
     CategoryID INT NOT NULL,
+    BrandID INT,
+    ModelID INT,
     LocationID INT NOT NULL,
     SerialNumber VARCHAR(100) UNIQUE,
     Quantity INT DEFAULT 1,
-    AssetType VARCHAR(50),
+    AssetType VARCHAR(50) NOT NULL,
     Status VARCHAR(50) NOT NULL,
     PurchaseDate DATE,
+    PurchasePrice DECIMAL(10,2),
+    WarrantyEnd DATE,
+    Notes TEXT,
     FOREIGN KEY (CategoryID) REFERENCES categories(CategoryID),
+    FOREIGN KEY (BrandID) REFERENCES brands(BrandID),
+    FOREIGN KEY (ModelID) REFERENCES models(ModelID),
     FOREIGN KEY (LocationID) REFERENCES locations(LocationID)
 );
 

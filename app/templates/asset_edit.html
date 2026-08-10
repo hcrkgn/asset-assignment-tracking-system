@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Asset</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <h1>Edit Asset</h1>
+
+    <form method="POST">
+
+        <label>Code</label>
+        <input type="text" name="Code" value="{{ asset.Code }}" required>
+        <br><br>
+
+        <label>Asset Name</label>
+        <input type="text" name="AssetName" value="{{ asset.AssetName }}" required>
+        <br><br>
+
+        <label>Category</label>
+        <select name="CategoryID" required>
+            {% for category in categories %}
+                <option value="{{ category.CategoryID }}"
+                    {% if category.CategoryID == asset.CategoryID %}selected{% endif %}>
+                    {{ category.CategoryName }}
+                </option>
+            {% endfor %}
+        </select>
+        <br><br>
+
+        <label>Location</label>
+        <select name="LocationID" required>
+            {% for location in locations %}
+                <option value="{{ location.LocationID }}"
+                    {% if location.LocationID == asset.LocationID %}selected{% endif %}>
+                    {{ location.LocationName }}
+                </option>
+            {% endfor %}
+        </select>
+        <br><br>
+
+        <label>Brand</label>
+        <input type="text" name="Brand" value="{{ asset.Brand or '' }}">
+        <br><br>
+
+        <label>Model</label>
+        <input type="text" name="Model" value="{{ asset.Model or '' }}">
+        <br><br>
+
+        <label>Serial Number</label>
+        <input type="text" name="SerialNumber" value="{{ asset.SerialNumber or '' }}">
+        <br><br>
+
+        <label>Quantity</label>
+        <input type="number" name="Quantity"
+               value="{{ asset.Quantity or 1 }}" min="1">
+        <br><br>
+
+        <label>Asset Type</label>
+        <input type="text" name="AssetType"
+               value="{{ asset.AssetType }}" required>
+        <br><br>
+
+        <label>Purchase Date</label>
+        <input type="date" name="PurchaseDate"
+               value="{{ asset.PurchaseDate or '' }}">
+        <br><br>
+
+        <label>Purchase Price</label>
+        <input type="number" name="PurchasePrice"
+               value="{{ asset.PurchasePrice or '' }}"
+               step="0.01">
+        <br><br>
+
+        <label>Warranty End</label>
+        <input type="date" name="WarrantyEnd"
+               value="{{ asset.WarrantyEnd or '' }}">
+        <br><br>
+
+        <label>Status</label>
+        <select name="Status" required>
+            {% for status in [
+                "IN STOCK",
+                "ASSIGNED",
+                "FAULTY",
+                "IN MAINTENANCE",
+                "SCRAPPED"
+            ] %}
+                <option value="{{ status }}"
+                    {% if asset.Status == status %}selected{% endif %}>
+                    {{ status }}
+                </option>
+            {% endfor %}
+        </select>
+        <br><br>
+
+        <label>Notes</label>
+        <textarea name="Notes">{{ asset.Notes or '' }}</textarea>
+        <br><br>
+
+        <button type="submit">Update Asset</button>
+
+    </form>
+
+    <br>
+
+    <a href="{{ url_for('assets') }}">Back to Assets</a>
+
+</body>
+</html>

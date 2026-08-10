@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AATS | Assets</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="card">
+        <h1>Assets</h1>
+
+        <form method="GET" action="{{ url_for('assets') }}" class="filter-form">
+          <input
+            type="text"
+            name="search"
+            placeholder="Search assets..."
+            value="{{ search }}"
+          />
+
+          <select name="category">
+            <option value="">All Categories</option>
+
+            {% for category in categories %}
+            <option
+              value="{{ category.CategoryID }}"
+              {% if selected_category == category.CategoryID|string %}selected{% endif %}
+            >
+              {{ category.CategoryName }}
+            </option>
+            {% endfor %}
+          </select>
+
+          <select name="location">
+            <option value="">All Locations</option>
+
+            {% for location in locations %}
+            <option
+              value="{{ location.LocationID }}"
+              {% if selected_location == location.LocationID|string %}selected{% endif %}
+            >
+              {{ location.LocationName }}
+            </option>
+            {% endfor %}
+          </select>
+
+          <select name="status">
+            <option value="">All Statuses</option>
+            <option value="IN STOCK"
+                 {% if selected_status == "IN STOCK" %}selected{% endif %}>
+                 IN STOCK
+            </option>
+
+            <option value="ASSIGNED"
+                {% if selected_status == "ASSIGNED" %}selected{% endif %}>
+                ASSIGNED
+            </option>
+
+            <option value="FAULTY"
+                {% if selected_status == "FAULTY" %}selected{% endif %}>
+                FAULTY
+            </option>
+
+            <option value="IN MAINTENANCE"
+                {% if selected_status == "IN MAINTENANCE" %}selected{% endif %}>
+                IN MAINTENANCE
+            </option>
+
+            <option value="SCRAPPED"
+                {% if selected_status == "SCRAPPED" %}selected{% endif %}>
+                SCRAPPED
+            </option>
+            
+          </select>
+
+          <button type="submit" class="btn">Search</button>
+
+          <a href="{{ url_for('assets') }}" class="btn"> Clear </a>
+        </form>
+
+        <p>Asset list</p>
+
+        <div class="actions">
+          <a href="{{ url_for('create_asset') }}" class="btn"> Add Asset </a>
+
+          <a href="{{ url_for('home') }}" class="btn btn-secondary"> Home </a>
+        </div>
+
+        <table>
+          <thead>
+              <tr>
+                <th>ID</th>
+
+        <th>
+            <a href="{{ url_for('assets',
+                sort='Code',
+                direction='asc',
+                search=search,
+                category=selected_category,
+                location=selected_location,
+                status=selected_status
+            ) }}">
+                Code ↑
+            </a>
+        </th>
+
+        <th>
+            <a href="{{ url_for('assets',
+                sort='AssetName',
+                direction='asc',
+                search=search,
+                category=selected_category,
+                location=selected_location,
+                status=selected_status
+            ) }}">
+                Name ↑
+            </a>
+        </th>
+
+        <th>Category</th>
+        <th>Location</th>
+        <th>Brand</th>
+        <th>Model</th>
+        <th>Quantity</th>
+        <th>Type</th>
+
+        <th>
+            <a href="{{ url_for('assets',
+                sort='Status',
+                direction='asc',
+                search=search,
+                category=selected_category,
+                location=selected_location,
+                status=selected_status
+            ) }}">
+                Status ↑
+            </a>
+        </th>
+
+        <th>Actions</th>
+    </tr>
+       </thead>
+
+          <tbody>
+    {% if assets %}
+        {% for asset in assets %}
+        <tr>
+            <td>{{ asset.AssetID }}</td>
+            <td>{{ asset.Code }}</td>
+            <td>{{ asset.AssetName }}</td>
+            <td>{{ asset.CategoryID }}</td>
+            <td>{{ asset.LocationID }}</td>
+            <td>{{ asset.Brand or "-" }}</td>
+            <td>{{ asset.Model or "-" }}</td>
+            <td>{{ asset.Quantity }}</td>
+            <td>{{ asset.AssetType }}</td>
+            <td>{{ asset.Status }}</td>
+
+            <td class="actions">
+                <a
+                    href="{{ url_for('asset_detail', asset_id=asset.AssetID) }}"
+                    class="btn btn-view"
+                >
+                    View
+                </a>
+
+                <a
+                    href="{{ url_for('edit_asset', asset_id=asset.AssetID) }}"
+                    class="btn btn-edit"
+                >
+                    Edit
+                </a>
+
+                <form
+                    method="POST"
+                    action="{{ url_for('delete_asset', asset_id=asset.AssetID) }}"
+                    class="delete-form"
+                    onsubmit="return confirm('Are you sure you want to delete this asset?');"
+                >
+                    <button type="submit" class="btn btn-delete">
+                        Delete
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    {% else %}
+        <tr>
+            <td colspan="11" class="empty-state">
+                No assets found.
+            </td>
+        </tr>
+    {% endif %}
+            </tbody>
+            
+        </table>
+
+        {% if pagination.pages > 1 %}
+        <div class="pagination">
+          {% if pagination.has_prev %}
+          <a
+            href="{{ url_for('assets',
+                                page=pagination.prev_num,
+                                search=search,
+                                category=selected_category,
+                                location=selected_location,
+                                status=selected_status) }}"
+            class="btn"
+          >
+            Previous
+          </a>
+          {% endif %}
+
+          <span> Page {{ pagination.page }} of {{ pagination.pages }} </span>
+
+          {% if pagination.has_next %}
+          <a
+            href="{{ url_for('assets',
+                                page=pagination.next_num,
+                                search=search,
+                                category=selected_category,
+                                location=selected_location,
+                                status=selected_status) }}"
+            class="btn"
+          >
+            Next
+          </a>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </body>
+</html>

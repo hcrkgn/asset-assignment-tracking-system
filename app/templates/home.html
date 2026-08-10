@@ -1,18 +1,52 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AATS | Ana Sayfa</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AATS | Home</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+
 <body>
-    <h1>Hoş geldiniz, {{ session["user_name"] }}!</h1>
-    <p>Giriş başarılı.</p>
 
-<button id="session-check-button" type="button">
-    Oturumu Kontrol Et
-</button>
+<div class="container">
 
-<p id="session-result"></p>
+    <div class="card">
+
+        <h1>Welcome, {{ session["user_name"] }}!</h1>
+        <p>Login successful.</p>
+
+        <div class="actions">
+            <a href="{{ url_for('assets') }}" class="btn">
+                Assets
+            </a>
+
+            <a href="{{ url_for('assignments') }}" class="btn btn-edit">
+                Assignments
+            </a>
+
+        </div>
+
+        <hr>
+
+        <h2>Session</h2>
+
+        <button id="session-check-button" type="button">
+            Check Session
+        </button>
+
+        <p id="session-result"></p>
+
+        <form method="POST" action="{{ url_for('logout') }}">
+            <button type="submit" class="btn-danger">
+                Log out
+            </button>
+        </form>
+
+    </div>
+
+</div>
 
 <script>
     const button = document.getElementById("session-check-button");
@@ -34,12 +68,9 @@
         }
 
         const data = await response.json();
-        result.textContent = `Aktif oturum: ${data.user_name}`;
+        result.textContent = `Active Session: ${data.user_name}`;
     });
 </script>
 
-    <form method="POST" action="{{ url_for('logout') }}">
-        <button type="submit">Çıkış Yap</button>
-    </form>
 </body>
 </html>

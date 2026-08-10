@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AATS | Add Asset</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        <h1>Add Asset</h1>
+        <p>Enter asset information.</p>
+
+        <form method="POST">
+
+            <div class="form-group">
+                <label for="Code">Code</label>
+                <input type="text" id="Code" name="Code" required>
+            </div>
+
+            <div class="form-group">
+                <label for="AssetName">Asset Name</label>
+                <input type="text" id="AssetName" name="AssetName" required>
+            </div>
+
+            <div class="form-group">
+                <label for="CategoryID">Category</label>
+                <select id="CategoryID" name="CategoryID" required>
+                    {% for category in categories %}
+                        <option value="{{ category.CategoryID }}">
+                            {{ category.CategoryName }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="LocationID">Location</label>
+                <select id="LocationID" name="LocationID" required>
+                    {% for location in locations %}
+                        <option value="{{ location.LocationID }}">
+                            {{ location.LocationName }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="Brand">Brand</label>
+                <input type="text" id="Brand" name="Brand">
+            </div>
+
+            <div class="form-group">
+                <label for="Model">Model</label>
+                <input type="text" id="Model" name="Model">
+            </div>
+
+            <div class="form-group">
+                <label for="SerialNumber">Serial Number</label>
+                <input type="text" id="SerialNumber" name="SerialNumber">
+            </div>
+
+            <div class="form-group">
+                <label for="Quantity">Quantity</label>
+                <input type="number" id="Quantity" name="Quantity" value="1" min="1">
+            </div>
+
+            <div class="form-group">
+                <label for="AssetType">Asset Type</label>
+                <input type="text" id="AssetType" name="AssetType" required>
+            </div>
+
+            <div class="form-group">
+                <label for="PurchaseDate">Purchase Date</label>
+                <input type="date" id="PurchaseDate" name="PurchaseDate">
+            </div>
+
+            <div class="form-group">
+                <label for="PurchasePrice">Purchase Price</label>
+                <input type="number" id="PurchasePrice" name="PurchasePrice" step="0.01">
+            </div>
+
+            <div class="form-group">
+                <label for="WarrantyEnd">Warranty End</label>
+                <input type="date" id="WarrantyEnd" name="WarrantyEnd">
+            </div>
+
+            <div class="form-group">
+                <label for="Status">Status</label>
+                <select id="Status" name="Status" required>
+                    <option value="IN STOCK">IN STOCK</option>
+                    <option value="ASSIGNED">ASSIGNED</option>
+                    <option value="FAULTY">FAULTY</option>
+                    <option value="IN MAINTENANCE">IN MAINTENANCE</option>
+                    <option value="SCRAPPED">SCRAPPED</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="Notes">Notes</label>
+                <textarea id="Notes" name="Notes"></textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit">
+                    Add Asset
+                </button>
+
+                <a href="{{ url_for('assets') }}" class="btn btn-secondary">
+                    Cancel
+                </a>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+</html>

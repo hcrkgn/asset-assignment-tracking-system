@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Assignment Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>Assignment Details</h1>
+
+    <div class="detail-card">
+
+        <p>
+            <strong>Assignment ID:</strong>
+            {{ assignment.AssignmentID }}
+        </p>
+
+        <p>
+            <strong>Asset ID:</strong>
+            {{ assignment.AssetID }}
+        </p>
+
+        <p>
+            <strong>User ID:</strong>
+            {{ assignment.UserID }}
+        </p>
+
+        <p>
+            <strong>Assigned Date:</strong>
+            {{ assignment.AssignedDate }}
+        </p>
+
+        <p>
+            <strong>Returned Date:</strong>
+            {{ assignment.ReturnedDate or "Not returned" }}
+        </p>
+
+    </div>
+
+    <br>
+
+    <a href="{{ url_for('assignments') }}" class="btn">
+        Back to Assignments
+    </a>
+
+</div>
+
+</body>
+</html>

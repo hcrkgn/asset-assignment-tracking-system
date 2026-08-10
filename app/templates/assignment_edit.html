@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Assignment</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>Edit Assignment</h1>
+
+    <form method="POST">
+
+        <label>Asset</label>
+        <select name="AssetID" required>
+            {% for asset in assets %}
+                <option value="{{ asset.AssetID }}"
+                    {% if asset.AssetID == assignment.AssetID %}selected{% endif %}>
+                    {{ asset.Code }} - {{ asset.AssetName }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <br><br>
+
+        <label>User</label>
+        <select name="UserID" required>
+            {% for user in users %}
+                <option value="{{ user.UserID }}"
+                    {% if user.UserID == assignment.UserID %}selected{% endif %}>
+                    {{ user.Name }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <br><br>
+
+        <label>Assigned Date</label>
+        <input
+            type="date"
+            name="AssignedDate"
+            value="{{ assignment.AssignedDate }}"
+            required
+        >
+
+        <br><br>
+
+        <label>Returned Date</label>
+        <input
+            type="date"
+            name="ReturnedDate"
+            value="{{ assignment.ReturnedDate or '' }}"
+        >
+
+        <br><br>
+
+        <button type="submit" class="btn">
+            Save Changes
+        </button>
+
+        <a href="{{ url_for('assignments') }}" class="btn">
+            Cancel
+        </a>
+
+    </form>
+
+</div>
+
+</body>
+</html>
