@@ -10,14 +10,27 @@
 
 <body>
 
-<div class="container">
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash-container">
+                {% for message in messages %}
+                    <div class="flash-message">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
 
+    <div class="container">
+        
     <div class="card">
 
         <h1>Add Asset</h1>
         <p>Enter asset information.</p>
 
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
+
 
             <div class="form-group">
                 <label for="Code">Code</label>
@@ -83,13 +96,41 @@
 
             <div class="form-group">
                 <label for="PurchasePrice">Purchase Price</label>
-                <input type="number" id="PurchasePrice" name="PurchasePrice" step="0.01">
+                <input
+                    type="number"
+                    id="PurchasePrice"
+                    name="PurchasePrice"
+                    step="0.01"
+                    min="0"
+                >
+                
             </div>
 
             <div class="form-group">
                 <label for="WarrantyEnd">Warranty End</label>
                 <input type="date" id="WarrantyEnd" name="WarrantyEnd">
             </div>
+
+
+<div class="form-group">
+    <label for="InvoiceFile">Invoice</label>
+    <input
+        type="file"
+        id="InvoiceFile"
+        name="InvoiceFile"
+        accept=".pdf,.jpg,.jpeg,.png"
+    >
+</div>
+
+<div class="form-group">
+    <label for="WarrantyFile">Warranty Document</label>
+    <input
+        type="file"
+        id="WarrantyFile"
+        name="WarrantyFile"
+        accept=".pdf,.jpg,.jpeg,.png"
+    >
+</div>
 
             <div class="form-group">
                 <label for="Status">Status</label>

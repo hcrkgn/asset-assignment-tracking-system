@@ -5,6 +5,17 @@ from flask import current_app
 
 from alembic import context
 
+from app.models.user_model import User  # noqa: F401
+from app.models.role_model import Role  # noqa: F401
+from app.models.department_model import Department  # noqa: F401
+from app.models.location_model import Location  # noqa: F401
+from app.models.category_model import Category  # noqa: F401
+from app.models.asset_model import Asset  # noqa: F401
+from app.models.assignment_model import Assignment  # noqa: F401
+from app.models.maintenance_model import Maintenance  # noqa: F401
+from app.models.inventory_model import Inventory  # noqa: F401
+from app.models.request_model import Request  # noqa: F401
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config

@@ -33,3 +33,6 @@ class Asset(db.Model):
 
     Status = db.Column(db.String(50), nullable=False)
     Notes = db.Column(db.Text)
+
+    InvoiceFile = db.Column(db.String(255))
+    WarrantyFile = db.Column(db.String(255))

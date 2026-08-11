@@ -1,8 +1,24 @@
+import uuid
 import os
 from datetime import timedelta
 
+from sqlalchemy.exc import IntegrityError
+
 from dotenv import load_dotenv
-from flask import Flask, flash, jsonify, redirect, render_template, request, session, url_for
+
+from werkzeug.utils import secure_filename
+
+from flask import (
+    Flask,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
+
 from app.utils.security import check_password
 from flask_migrate import Migrate
 from app.database.db import db
@@ -37,11 +53,27 @@ app.config["SQLALCHEMY_DATABASE_URI"] = (
     f"{os.getenv('MYSQL_DATABASE')}"
 )
 
+app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
+
+UPLOAD_FOLDER = os.path.join(app.root_path, "uploads")
+ALLOWED_EXTENSIONS = {"pdf", "jpg", "jpeg", "png"}
+
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
 
 db.init_app(app)
 migrate = Migrate(app, db)
 
+
+def allowed_file(filename):
+    return (
+        "." in filename
+        and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+    )
 
 
 @app.route("/")
@@ -60,11 +92,20 @@ def assets():
     location_id = request.args.get("location", "").strip()
     status = request.args.get("status", "").strip()
 
-    page = request.args.get("page", 1, type=int)
-    per_page = 10
-
     sort = request.args.get("sort", "AssetID")
     direction = request.args.get("direction", "desc")
+
+    allowed_sort_fields = {
+        "AssetID": Asset.AssetID,
+        "Code": Asset.Code,
+        "AssetName": Asset.AssetName,
+        "Status": Asset.Status,
+    }
+
+    sort_column = allowed_sort_fields.get(sort, Asset.AssetID)
+
+    page = request.args.get("page", 1, type=int)
+    per_page = 10
 
     query = Asset.query
 
@@ -88,15 +129,6 @@ def assets():
 
     if status:
         query = query.filter(Asset.Status == status)
-
-    sort_columns = {
-        "Code": Asset.Code,
-        "AssetName": Asset.AssetName,
-        "PurchaseDate": Asset.PurchaseDate,
-        "Status": Asset.Status,
-    }
-
-    sort_column = sort_columns.get(sort, Asset.AssetID)
 
     if direction == "asc":
         query = query.order_by(sort_column.asc())
@@ -132,6 +164,53 @@ def assets():
 @require_roles(1, 2)
 def create_asset():
     if request.method == "POST":
+        purchase_price = request.form.get("PurchasePrice", "").strip()
+
+        if purchase_price:
+            purchase_price = purchase_price.replace(",", ".")
+
+            try:
+                purchase_price = float(purchase_price)
+            except ValueError:
+                flash("Invalid purchase price.")
+                return redirect(url_for("create_asset"))
+
+            if purchase_price < 0:
+                flash("Purchase price cannot be negative.")
+                return redirect(url_for("create_asset"))
+        else:
+            purchase_price = None
+
+        invoice_file = request.files.get("InvoiceFile")
+        warranty_file = request.files.get("WarrantyFile")
+
+        invoice_filename = None
+        warranty_filename = None
+
+        if invoice_file and invoice_file.filename:
+            if not allowed_file(invoice_file.filename):
+                flash("Invalid invoice file type.")
+                return redirect(url_for("create_asset"))
+
+            invoice_filename = (
+                f"{uuid.uuid4().hex}_{secure_filename(invoice_file.filename)}"
+            )
+            invoice_file.save(
+                os.path.join(UPLOAD_FOLDER, invoice_filename)
+            )
+
+        if warranty_file and warranty_file.filename:
+            if not allowed_file(warranty_file.filename):
+                flash("Invalid warranty file type.")
+                return redirect(url_for("create_asset"))
+
+            warranty_filename = (
+                f"{uuid.uuid4().hex}_{secure_filename(warranty_file.filename)}"
+            )
+            warranty_file.save(
+                os.path.join(UPLOAD_FOLDER, warranty_filename)
+            )
+
         asset = Asset(
             Code=request.form["Code"].strip(),
             AssetName=request.form["AssetName"].strip(),
@@ -143,14 +222,21 @@ def create_asset():
             Quantity=request.form.get("Quantity", 1),
             AssetType=request.form["AssetType"].strip(),
             PurchaseDate=request.form.get("PurchaseDate") or None,
-            PurchasePrice=request.form.get("PurchasePrice") or None,
+            PurchasePrice=purchase_price,
             WarrantyEnd=request.form.get("WarrantyEnd") or None,
             Status=request.form["Status"].strip(),
             Notes=request.form.get("Notes", "").strip() or None,
+            InvoiceFile=invoice_filename,
+            WarrantyFile=warranty_filename,
         )
 
-        db.session.add(asset)
-        db.session.commit()
+        try:
+            db.session.add(asset)
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            flash("Serial number already exists.")
+            return redirect(url_for("create_asset"))
 
         flash("Asset successfully added.")
         return redirect(url_for("assets"))
@@ -368,6 +454,11 @@ def session_info():
 @app.errorhandler(403)
 def forbidden(error):
     return render_template("403.html"), 403
+
+@app.errorhandler(413)
+def request_entity_too_large(error):
+    flash("File size must not exceed 50 MB.")
+    return redirect(url_for("create_asset"))
 
 
 @app.route("/login", methods=["GET", "POST"])
