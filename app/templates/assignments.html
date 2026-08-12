@@ -10,6 +10,18 @@
   </head>
 
   <body>
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div class="flash-container">
+            {% for message in messages %}
+                <div class="flash-message">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
     <h1>Assignments</h1>
 
     <a href="{{ url_for('create_assignment') }}" class="btn btn-view">
@@ -25,6 +37,7 @@
           <th>Asset ID</th>
           <th>User ID</th>
           <th>Assigned Date</th>
+          <th>Quantity</th>
           <th>Returned Date</th>
           <th>Actions</th>
         </tr>
@@ -37,6 +50,7 @@
           <td>{{ assignment.AssetID }}</td>
           <td>{{ assignment.UserID }}</td>
           <td>{{ assignment.AssignedDate }}</td>
+          <td>{{ assignment.Quantity }}</td>
           <td>{{ assignment.ReturnedDate or "-" }}</td>
           <td class="actions">
             <a
@@ -51,16 +65,17 @@
               class="btn btn-edit"
             >
               Edit
+
             </a>
             {% if not assignment.ReturnedDate %}
-            <form
-              method="POST"
-              action="{{ url_for('return_assignment',
-                             assignment_id=assignment.AssignmentID) }}"
-              style="display: inline"
+            <a
+              href="{{ url_for('return_assignment',
+                               assignment_id=assignment.AssignmentID) }}"
+              class="btn btn-return"
             >
-              <button type="submit" class="btn btn-return">Return</button>
-            </form>
+              Return
+            </a>
+
             {% endif %}
           </td>
         </tr>

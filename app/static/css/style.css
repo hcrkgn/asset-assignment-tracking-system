@@ -221,3 +221,15 @@ textarea {
     visibility: hidden;
   }
 }
+.flash-message {
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+}
+
+.flash-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}

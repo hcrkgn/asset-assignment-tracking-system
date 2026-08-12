@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AATS | Return Asset</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        <h1>Return Asset</h1>
+
+        <p>
+            <strong>Asset:</strong>
+            {{ asset.Code }} - {{ asset.AssetName }}
+        </p>
+
+        <p>
+            <strong>Assigned Quantity:</strong>
+            {{ assignment.Quantity }}
+        </p>
+
+        <form method="POST">
+
+            <div class="form-group">
+                <label for="Quantity">
+                    Return Quantity
+                </label>
+
+                <input
+                    type="number"
+                    id="Quantity"
+                    name="Quantity"
+                    min="1"
+                    max="{{ assignment.Quantity }}"
+                    value="{{ assignment.Quantity }}"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="ReturnCondition">
+                    Return Condition
+                </label>
+
+                <select
+                    id="ReturnCondition"
+                    name="ReturnCondition"
+                    required
+                >
+                    <option value="">Select condition</option>
+                    <option value="INTACT">Intact</option>
+                    <option value="FAULTY">Faulty</option>
+                </select>
+            </div>
+
+            <div class="form-actions">
+
+                <button type="submit">
+                    Return Asset
+                </button>
+
+                <a
+                    href="{{ url_for('assignments') }}"
+                    class="btn btn-secondary"
+                >
+                    Cancel
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+</html>

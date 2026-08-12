@@ -15,6 +15,7 @@ from app.models.assignment_model import Assignment  # noqa: F401
 from app.models.maintenance_model import Maintenance  # noqa: F401
 from app.models.inventory_model import Inventory  # noqa: F401
 from app.models.request_model import Request  # noqa: F401
+from app.models.movement_model import Movement #noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

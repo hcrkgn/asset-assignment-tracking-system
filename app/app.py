@@ -35,6 +35,7 @@ from app.models.location_model import Location
 from app.models.category_model import Category
 from app.models.asset_model import Asset
 from app.models.assignment_model import Assignment
+from app.models.movement_model import Movement  # noqa: F401
 
 
 load_dotenv()
@@ -258,24 +259,93 @@ def assignments():
     assignments = Assignment.query.all()
     return render_template("assignments.html", assignments=assignments)
 
-
 @app.route("/assignments/create", methods=["GET", "POST"])
 @require_roles(1, 2)
 def create_assignment():
     if request.method == "POST":
-        assignment = Assignment(
-            AssetID=request.form["AssetID"],
-            UserID=request.form["UserID"],
-            AssignedDate=request.form["AssignedDate"]
-        )
+        asset_id = request.form["AssetID"]
+        user_id = request.form["UserID"]
+        assigned_date = request.form["AssignedDate"]
+        quantity = int(request.form.get("Quantity", 1))
+        note = request.form.get("Note", "").strip() or None
 
-        db.session.add(assignment)
-        db.session.commit()
+        asset = db.session.get(Asset, asset_id)
+
+        if not asset:
+            flash("Asset not found.")
+            return redirect(url_for("create_assignment"))
+
+        if asset.Status in ["IN MAINTENANCE", "SCRAPPED"]:
+            flash("This asset cannot be assigned.")
+            return redirect(url_for("create_assignment"))
+
+        if quantity < 1:
+            flash("Quantity must be at least 1.")
+            return redirect(url_for("create_assignment"))
+
+        if asset.AssetType == "Individual" and quantity != 1:
+            flash("An individual asset can only be assigned as 1.")
+            return redirect(url_for("create_assignment"))
+
+        if asset.AssetType == "Quantity" and quantity > asset.Quantity:
+            flash("Assignment quantity cannot exceed available quantity.")
+            return redirect(url_for("create_assignment"))
+
+        if asset.AssetType == "Individual":
+            existing_assignment = Assignment.query.filter_by(
+                AssetID=asset.AssetID,
+                ReturnedDate=None
+            ).first()
+
+            if existing_assignment:
+                flash("This asset is already assigned.")
+                return redirect(url_for("create_assignment"))
+
+        try:
+            assignment = Assignment(
+                AssetID=asset.AssetID,
+                UserID=user_id,
+                AssignedDate=assigned_date,
+                Quantity=quantity,
+                Note=note
+            )
+
+            db.session.add(assignment)
+            db.session.flush()
+
+            movement = Movement(
+                AssetID=asset.AssetID,
+                AssignmentID=assignment.AssignmentID,
+                UserID=user_id,
+                MovementType="ASSIGN",
+                Quantity=quantity,
+                MovementDate=assigned_date,
+                Note=note
+            )
+
+            db.session.add(movement)
+
+            if asset.AssetType == "Individual":
+                 asset.Status = "ASSIGNED"
+            else:
+                 asset.Quantity -= quantity
+                
+
+            db.session.commit()
+
+        except Exception as e:
+            db.session.rollback()
+            print(f"Assignment error: {e}")
+            flash("Assignment could not be completed.")
+            return redirect(url_for("create_assignment"))
 
         flash("Asset successfully assigned.")
         return redirect(url_for("assignments"))
 
-    assets = Asset.query.filter_by(Status="IN STOCK").all()
+    assets = Asset.query.filter(
+        Asset.Status.notin_(["IN MAINTENANCE", "SCRAPPED"])
+    ).all()
+
     users = User.query.all()
 
     return render_template(
@@ -283,7 +353,6 @@ def create_assignment():
         assets=assets,
         users=users
     )
-
 
 
 @app.route("/assignments/<int:assignment_id>")
@@ -332,7 +401,10 @@ def edit_assignment(assignment_id):
 
 
 
-@app.route("/assignments/<int:assignment_id>/return", methods=["POST"])
+@app.route(
+    "/assignments/<int:assignment_id>/return",
+    methods=["GET", "POST"]
+)
 @require_roles(1, 2)
 def return_assignment(assignment_id):
     assignment = db.session.get(Assignment, assignment_id)
@@ -351,17 +423,87 @@ def return_assignment(assignment_id):
         flash("Asset not found.")
         return redirect(url_for("assignments"))
 
-    from datetime import date
+    if request.method == "POST":
+        try:
+            return_quantity = int(request.form.get("Quantity", 0))
+        except ValueError:
+            flash("Invalid return quantity.")
+            return redirect(
+                url_for(
+                    "return_assignment",
+                    assignment_id=assignment_id
+                )
+            )
 
-    assignment.ReturnedDate = date.today()
-    asset.Status = "IN STOCK"
+        return_condition = request.form.get(
+            "ReturnCondition",
+            ""
+        ).strip()
 
-    db.session.commit()
+        if return_quantity < 1:
+            flash("Return quantity must be at least 1.")
+            return redirect(
+                url_for(
+                    "return_assignment",
+                    assignment_id=assignment_id
+                )
+            )
 
-    flash("Asset successfully returned.")
-    return redirect(url_for("assignments"))
+        if return_quantity > assignment.Quantity:
+            flash("Return quantity cannot exceed assigned quantity.")
+            return redirect(
+                url_for(
+                    "return_assignment",
+                    assignment_id=assignment_id
+                )
+            )
 
+        if return_condition not in ["INTACT", "FAULTY"]:
+            flash("Please select a valid return condition.")
+            return redirect(
+                url_for(
+                    "return_assignment",
+                    assignment_id=assignment_id
+                )
+            )
 
+        from datetime import date
+
+        try:
+            movement = Movement(
+                AssetID=asset.AssetID,
+                AssignmentID=assignment.AssignmentID,
+                UserID=assignment.UserID,
+                MovementType="RETURN",
+                Quantity=return_quantity,
+                MovementDate=date.today(),
+                Note=f"Return condition: {return_condition}"
+            )
+
+            db.session.add(movement)
+
+            assignment.Quantity -= return_quantity
+            assignment.ReturnCondition = return_condition
+
+            if assignment.Quantity == 0:
+                assignment.ReturnedDate = date.today()
+                asset.Status = "IN STOCK"
+
+            db.session.commit()
+
+        except Exception:
+            db.session.rollback()
+            flash("Asset return could not be completed.")
+            return redirect(url_for("assignments"))
+
+        flash("Asset successfully returned.")
+        return redirect(url_for("assignments"))
+
+    return render_template(
+        "assignment_return.html",
+        assignment=assignment,
+        asset=asset
+    )
 
 
 @app.route("/assets/<int:asset_id>/edit", methods=["GET", "POST"])

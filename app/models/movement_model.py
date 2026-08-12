@@ -1,10 +1,10 @@
 from app.database.db import db
 
 
-class Assignment(db.Model):
-    __tablename__ = "assignments"
+class Movement(db.Model):
+    __tablename__ = "movements"
 
-    AssignmentID = db.Column(
+    MovementID = db.Column(
         db.Integer,
         primary_key=True,
         autoincrement=True
@@ -16,13 +16,22 @@ class Assignment(db.Model):
         nullable=False
     )
 
+    AssignmentID = db.Column(
+        db.Integer,
+        db.ForeignKey("assignments.AssignmentID"),
+        nullable=True
+    )
+
     UserID = db.Column(
         db.Integer,
         db.ForeignKey("users.UserID"),
-        nullable=False
+        nullable=True
     )
 
-    AssignedDate = db.Column(db.Date, nullable=False)
+    MovementType = db.Column(
+        db.String(30),
+        nullable=False
+    )
 
     Quantity = db.Column(
         db.Integer,
@@ -30,17 +39,12 @@ class Assignment(db.Model):
         default=1
     )
 
+    MovementDate = db.Column(
+        db.Date,
+        nullable=False
+    )
+
     Note = db.Column(
         db.Text,
-        nullable=True
-    )
-
-    ReturnedDate = db.Column(
-        db.Date,
-        nullable=True
-    )
-
-    ReturnCondition = db.Column(
-        db.String(20),
         nullable=True
     )
