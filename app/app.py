@@ -486,9 +486,17 @@ def return_assignment(assignment_id):
             assignment.Quantity -= return_quantity
             assignment.ReturnCondition = return_condition
 
+            if asset.AssetType == "Quantity":
+                if return_condition == "INTACT":
+                    asset.Quantity += return_quantity
+
             if assignment.Quantity == 0:
                 assignment.ReturnedDate = date.today()
-                asset.Status = "IN STOCK"
+
+                if return_condition == "FAULTY":
+                    asset.Status = "FAULTY"
+                else:
+                    asset.Status = "IN STOCK"
 
             db.session.commit()
 
@@ -505,7 +513,6 @@ def return_assignment(assignment_id):
         assignment=assignment,
         asset=asset
     )
-
 
 
 @app.route("/users/<int:user_id>/assignment-history")
