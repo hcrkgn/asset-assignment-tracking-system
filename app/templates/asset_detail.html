@@ -60,6 +60,18 @@
 
     <br><br>
 
+    <a
+        href="{{ url_for(
+            'asset_ownership_history',
+             asset_id=asset.AssetID
+        ) }}"
+        class="btn btn-view"
+    >
+        Ownership History
+    </a>
+
+    <br><br>
+
     <a href="{{ url_for('assets') }}">
         Back to Assets
     </a>

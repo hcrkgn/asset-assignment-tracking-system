@@ -355,6 +355,7 @@ def create_assignment():
     )
 
 
+
 @app.route("/assignments/<int:assignment_id>")
 @require_roles(1, 2)
 def assignment_detail(assignment_id):
@@ -503,6 +504,53 @@ def return_assignment(assignment_id):
         "assignment_return.html",
         assignment=assignment,
         asset=asset
+    )
+
+
+
+@app.route("/users/<int:user_id>/assignment-history")
+@require_roles(1, 2)
+def user_assignment_history(user_id):
+    user = db.session.get(User, user_id)
+
+    if not user:
+        flash("User not found.")
+        return redirect(url_for("assignments"))
+
+    assignments = (
+        Assignment.query
+        .filter_by(UserID=user_id)
+        .order_by(Assignment.AssignedDate.desc())
+        .all()
+    )
+
+    return render_template(
+        "user_assignment_history.html",
+        user=user,
+        assignments=assignments
+    )
+
+
+@app.route("/assets/<int:asset_id>/ownership-history")
+@require_roles(1, 2)
+def asset_ownership_history(asset_id):
+    asset = db.session.get(Asset, asset_id)
+
+    if not asset:
+        flash("Asset not found.")
+        return redirect(url_for("assets"))
+
+    assignments = (
+        Assignment.query
+        .filter_by(AssetID=asset_id)
+        .order_by(Assignment.AssignedDate.desc())
+        .all()
+    )
+
+    return render_template(
+        "asset_ownership_history.html",
+        asset=asset,
+        assignments=assignments
     )
 
 

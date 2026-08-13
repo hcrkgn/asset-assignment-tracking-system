@@ -48,7 +48,20 @@
         <tr>
           <td>{{ assignment.AssignmentID }}</td>
           <td>{{ assignment.AssetID }}</td>
-          <td>{{ assignment.UserID }}</td>
+          <td>
+             {{ assignment.UserID }}
+             <br>
+             <a
+                 href="{{ url_for(
+                     'user_assignment_history',
+                      user_id=assignment.UserID
+                 ) }}"
+                 class="btn btn-view"
+             >
+                 Employee History
+             </a>
+          </td>
+          
           <td>{{ assignment.AssignedDate }}</td>
           <td>{{ assignment.Quantity }}</td>
           <td>{{ assignment.ReturnedDate or "-" }}</td>

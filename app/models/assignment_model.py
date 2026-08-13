@@ -44,3 +44,11 @@ class Assignment(db.Model):
         db.String(20),
         nullable=True
     )
+
+    __table_args__ = (
+        db.Index(
+            "idx_active_asset_assignment",
+            "AssetID",
+            "ReturnedDate"
+        ),
+    )

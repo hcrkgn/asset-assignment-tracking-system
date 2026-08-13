@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Assignment History</title>
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+</head>
+
+<body>
+
+    <h1>Assignment History</h1>
+
+    <p>
+        <strong>Employee:</strong>
+        {{ user.Name }}
+    </p>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Assignment ID</th>
+                <th>Asset ID</th>
+                <th>Quantity</th>
+                <th>Assigned Date</th>
+                <th>Returned Date</th>
+                <th>Return Condition</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for assignment in assignments %}
+            <tr>
+                <td>{{ assignment.AssignmentID }}</td>
+                <td>{{ assignment.AssetID }}</td>
+                <td>{{ assignment.Quantity }}</td>
+                <td>{{ assignment.AssignedDate }}</td>
+                <td>{{ assignment.ReturnedDate or "-" }}</td>
+                <td>{{ assignment.ReturnCondition or "-" }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6">
+                    No assignment history found.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <br>
+
+    <a href="{{ url_for('assignments') }}">
+        Back to Assignments
+    </a>
+
+</body>
+</html>
