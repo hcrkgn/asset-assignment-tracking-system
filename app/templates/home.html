@@ -26,6 +26,16 @@
                 Assignments
             </a>
 
+            <a href="{{ url_for('requests_page') }}" class="btn btn-primary">
+                My Requests
+            </a>
+
+            {% if session.get("role_id") == 3 %}
+              <a href="{{ url_for('manager_requests') }}" class="btn">
+                   Manage Requests
+              </a>
+            {% endif %}
+
         </div>
 
         <hr>

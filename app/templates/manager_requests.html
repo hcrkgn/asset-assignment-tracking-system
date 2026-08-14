@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Manage Requests</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<div class="requests-container">
+
+    <div class="requests-header">
+        <div>
+            <h1>Manage Requests</h1>
+            <p>Review and manage employee asset requests.</p>
+        </div>
+
+        <a href="{{ url_for('home') }}" class="back-button">
+            Back to Home
+        </a>
+    </div>
+
+
+    <!-- PENDING REQUESTS -->
+
+    <section class="request-section">
+
+        <h2>Pending Requests</h2>
+
+        {% if pending_requests %}
+
+            <div class="request-grid">
+
+                {% for req in pending_requests %}
+
+                    <div class="request-card">
+
+                        <div class="request-card-header">
+                            <h3>Request #{{ req.RequestID }}</h3>
+
+                            <span class="status-badge pending">
+                                PENDING
+                            </span>
+                        </div>
+
+                        <div class="request-info">
+
+                            <p>
+                                <strong>Requester:</strong>
+                                {{ req.RequesterID }}
+                            </p>
+
+                            <p>
+                                <strong>Category:</strong>
+                                {{ req.CategoryID }}
+                            </p>
+
+                            <p>
+                                <strong>Asset:</strong>
+                                {{ req.AssetID or "Any available asset" }}
+                            </p>
+
+                            <p>
+                                <strong>Quantity:</strong>
+                                {{ req.Quantity }}
+                            </p>
+
+                            <p>
+                                <strong>Date:</strong>
+                                {{ req.RequestDate }}
+                            </p>
+
+                            <p>
+                                <strong>Description:</strong>
+                                {{ req.Description or "-" }}
+                            </p>
+
+                        </div>
+
+                        <div class="request-actions">
+
+                            <form
+                                method="POST"
+                                action="{{ url_for('approve_request', request_id=req.RequestID) }}"
+                            >
+                                <button type="submit" class="approve-button">
+                                    Approve
+                                </button>
+                            </form>
+
+                            <form
+                                method="POST"
+                                action="{{ url_for('reject_request', request_id=req.RequestID) }}"
+                                class="reject-form"
+                            >
+
+                                <input
+                                    type="text"
+                                    name="RejectionReason"
+                                    placeholder="Rejection reason"
+                                    required
+                                >
+
+                                <button type="submit" class="reject-button">
+                                    Reject
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-request">
+                <p>No pending requests.</p>
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- REQUEST HISTORY -->
+
+    <section class="request-section">
+
+        <h2>Request History</h2>
+
+        {% if processed_requests %}
+
+            <div class="request-grid">
+
+                {% for req in processed_requests %}
+
+                    <div class="request-card history-card">
+
+                        <div class="request-card-header">
+
+                            <h3>Request #{{ req.RequestID }}</h3>
+
+                            {% if req.Status == "APPROVED" %}
+
+                                <span class="status-badge approved">
+                                    APPROVED
+                                </span>
+
+                            {% else %}
+
+                                <span class="status-badge rejected">
+                                    REJECTED
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+                        <div class="request-info">
+
+                            <p>
+                                <strong>Requester:</strong>
+                                {{ req.RequesterID }}
+                            </p>
+
+                            <p>
+                                <strong>Category:</strong>
+                                {{ req.CategoryID }}
+                            </p>
+
+                            <p>
+                                <strong>Asset:</strong>
+                                {{ req.AssetID or "Any available asset" }}
+                            </p>
+
+                            <p>
+                                <strong>Quantity:</strong>
+                                {{ req.Quantity }}
+                            </p>
+
+                            <p>
+                                <strong>Date:</strong>
+                                {{ req.RequestDate }}
+                            </p>
+
+                            <p>
+                                <strong>Description:</strong>
+                                {{ req.Description or "-" }}
+                            </p>
+
+                            {% if req.Status == "REJECTED" %}
+
+                                <p>
+                                    <strong>Rejection Reason:</strong>
+                                    {{ req.RejectionReason }}
+                                </p>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-request">
+                <p>No processed requests yet.</p>
+            </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+</body>
+</html>

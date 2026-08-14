@@ -1,5 +1,5 @@
-import uuid
 import os
+import uuid       
 from datetime import timedelta
 
 from sqlalchemy.exc import IntegrityError
@@ -35,8 +35,9 @@ from app.models.location_model import Location
 from app.models.category_model import Category
 from app.models.asset_model import Asset
 from app.models.assignment_model import Assignment
-from app.models.movement_model import Movement  # noqa: F401
-
+from app.models.movement_model import Movement  
+from app.models.request_model import Request 
+from app.models.department_model import Department # noqa: F401
 
 load_dotenv()
 
@@ -648,6 +649,64 @@ def session_info():
     })
 
 
+@app.route("/requests/create", methods=["GET", "POST"])
+@require_roles(3, 4)
+def create_request():
+    if request.method == "POST":
+        category_id = request.form.get("CategoryID")
+        asset_id = request.form.get("AssetID") or None
+        quantity = request.form.get("Quantity", type=int)
+        description = request.form.get("Description", "").strip()
+
+        if not category_id:
+            flash("Category is required.")
+            return redirect(url_for("create_request"))
+
+        if not quantity or quantity < 1:
+            flash("Quantity must be at least 1.")
+            return redirect(url_for("create_request"))
+
+        new_request = Request(
+            RequesterID=session["user_id"],
+            CategoryID=category_id,
+            AssetID=asset_id,
+            Quantity=quantity,
+            Description=description or None,
+            Status="PENDING"
+        )
+
+        db.session.add(new_request)
+        db.session.commit()
+
+        flash("Request successfully created.")
+        return redirect(url_for("requests_page"))
+
+    categories = Category.query.all()
+    assets = Asset.query.all()
+
+    return render_template(
+        "request_create.html",
+        categories=categories,
+        assets=assets
+    )
+
+
+@app.route("/requests")
+@require_roles(3, 4)
+def requests_page():
+    requests = (
+        Request.query
+        .filter_by(RequesterID=session["user_id"])
+        .order_by(Request.RequestDate.desc())
+        .all()
+    )
+
+    return render_template(
+        "requests.html",
+        requests=requests
+    )
+
+
 @app.errorhandler(403)
 def forbidden(error):
     return render_template("403.html"), 403
@@ -696,6 +755,97 @@ def logout():
     session.clear()
     flash("You have successfully logged out.")
     return redirect(url_for("login"))
+
+
+
+
+
+@app.route("/manager/requests")
+@require_roles(3)
+def manager_requests():
+    pending_requests = (
+        Request.query
+        .filter(Request.Status == "PENDING")
+        .order_by(Request.RequestDate.desc())
+        .all()
+    )
+
+    processed_requests = (
+        Request.query
+        .filter(
+            Request.Status.in_(["APPROVED", "REJECTED"])
+        )
+        .order_by(Request.RequestDate.desc())
+        .all()
+    )
+
+    return render_template(
+        "manager_requests.html",
+        pending_requests=pending_requests,
+        processed_requests=processed_requests,
+    )
+
+
+
+    
+
+@app.route("/manager/requests/<int:request_id>/approve", methods=["POST"])
+@require_roles(3)
+def approve_request(request_id):
+    manager = db.session.get(User, session["user_id"])
+    req = db.session.get(Request, request_id)
+
+    if not req or not manager:
+        return render_template("403.html"), 403
+
+    requester = db.session.get(User, req.RequesterID)
+
+    if not requester or requester.DepartmentID != manager.DepartmentID:
+        return render_template("403.html"), 403
+
+    if req.Status != "PENDING":
+        flash("This request has already been processed.")
+        return redirect(url_for("manager_requests"))
+
+    req.Status = "APPROVED"
+    db.session.commit()
+
+    flash("Request approved.")
+    return redirect(url_for("manager_requests"))
+
+
+
+@app.route("/manager/requests/<int:request_id>/reject", methods=["POST"])
+@require_roles(3)
+def reject_request(request_id):
+    manager = db.session.get(User, session["user_id"])
+    req = db.session.get(Request, request_id)
+
+    if not req or not manager:
+        return render_template("403.html"), 403
+
+    requester = db.session.get(User, req.RequesterID)
+
+    if not requester or requester.DepartmentID != manager.DepartmentID:
+        return render_template("403.html"), 403
+
+    if req.Status != "PENDING":
+        flash("This request has already been processed.")
+        return redirect(url_for("manager_requests"))
+
+    rejection_reason = request.form.get("RejectionReason", "").strip()
+
+    if not rejection_reason:
+        flash("Rejection reason is required.")
+        return redirect(url_for("manager_requests"))
+
+    req.Status = "REJECTED"
+    req.RejectionReason = rejection_reason
+
+    db.session.commit()
+
+    flash("Request rejected.")
+    return redirect(url_for("manager_requests"))
 
 
 if __name__ == "__main__":

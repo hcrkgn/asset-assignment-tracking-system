@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Assignment Request</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <h1>Create Assignment Request</h1>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('create_request') }}">
+
+        <label for="CategoryID">Category</label>
+        <select name="CategoryID" id="CategoryID" required>
+            <option value="">Select category</option>
+
+            {% for category in categories %}
+                <option value="{{ category.CategoryID }}">
+                    {{ category.CategoryName }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <label for="AssetID">Specific Asset</label>
+        <select name="AssetID" id="AssetID">
+            <option value="">Any available asset</option>
+
+            {% for asset in assets %}
+                <option value="{{ asset.AssetID }}">
+                    {{ asset.Code }} - {{ asset.AssetName }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <label for="Quantity">Quantity</label>
+        <input
+            type="number"
+            name="Quantity"
+            id="Quantity"
+            min="1"
+            value="1"
+            required
+        >
+
+        <label for="Description">Reason</label>
+        <textarea
+            name="Description"
+            id="Description"
+            rows="5"
+            placeholder="Explain why you need this asset..."
+        ></textarea>
+
+        <button type="submit">Submit Request</button>
+
+    </form>
+
+</body>
+</html>

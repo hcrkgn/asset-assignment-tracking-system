@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AATS | My Requests</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <div class="page-container">
+
+        <div class="page-header">
+            <div>
+                <h1>My Requests</h1>
+                <p>View and track your assignment requests.</p>
+            </div>
+
+            <div class="page-actions">
+                <a href="{{ url_for('create_request') }}" class="btn btn-primary">
+                    + Create New Request
+                </a>
+
+                <a href="{{ url_for('home') }}" class="btn btn-secondary">
+                    Back to Home
+                </a>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="requests-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Category</th>
+                        <th>Asset</th>
+                        <th>Quantity</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Description</th>
+                        <th>Rejection Reason</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for item in requests %}
+                    <tr>
+                        <td>{{ item.RequestID }}</td>
+                        <td>{{ item.CategoryID }}</td>
+                        <td>{{ item.AssetID or "-" }}</td>
+                        <td>{{ item.Quantity }}</td>
+                        <td>{{ item.RequestDate }}</td>
+
+                        <td>
+                            <span class="status status-{{ item.Status|lower }}">
+                                {{ item.Status }}
+                            </span>
+                        </td>
+
+                        <td>{{ item.Description or "-" }}</td>
+                        <td>{{ item.RejectionReason or "-" }}</td>
+                    </tr>
+
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="empty-state">
+                            No requests found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</body>
+</html>
