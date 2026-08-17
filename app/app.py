@@ -38,6 +38,9 @@ from app.models.assignment_model import Assignment
 from app.models.movement_model import Movement  
 from app.models.request_model import Request 
 from app.models.department_model import Department # noqa: F401
+from app.models.audit_log_model import AuditLog 
+from app.models.notification_model import Notification 
+
 
 load_dotenv()
 
@@ -649,6 +652,7 @@ def session_info():
     })
 
 
+
 @app.route("/requests/create", methods=["GET", "POST"])
 @require_roles(3, 4)
 def create_request():
@@ -676,6 +680,26 @@ def create_request():
         )
 
         db.session.add(new_request)
+        db.session.flush()
+
+        requester = db.session.get(User, session["user_id"])
+
+        manager = (
+            User.query
+            .filter(
+                User.RoleID == 3,
+                User.DepartmentID == requester.DepartmentID
+            )
+            .first()
+        )
+
+        if manager:
+            create_notification(
+                manager.UserID,
+                f"New assignment request #{new_request.RequestID} "
+                f"has been submitted."
+            )
+
         db.session.commit()
 
         flash("Request successfully created.")
@@ -763,16 +787,27 @@ def logout():
 @app.route("/manager/requests")
 @require_roles(3)
 def manager_requests():
+    manager = db.session.get(User, session["user_id"])
+
+    if not manager or not manager.DepartmentID:
+        return render_template("403.html"), 403
+
     pending_requests = (
         Request.query
-        .filter(Request.Status == "PENDING")
+        .join(User, Request.RequesterID == User.UserID)
+        .filter(
+            User.DepartmentID == manager.DepartmentID,
+            Request.Status == "PENDING"
+        )
         .order_by(Request.RequestDate.desc())
         .all()
     )
 
     processed_requests = (
         Request.query
+        .join(User, Request.RequesterID == User.UserID)
         .filter(
+            User.DepartmentID == manager.DepartmentID,
             Request.Status.in_(["APPROVED", "REJECTED"])
         )
         .order_by(Request.RequestDate.desc())
@@ -786,8 +821,72 @@ def manager_requests():
     )
 
 
+@app.route("/notifications")
+@require_roles(3, 4)
+def notifications():
+    user_notifications = (
+        Notification.query
+        .filter_by(UserID=session["user_id"])
+        .order_by(Notification.CreatedAt.desc())
+        .all()
+    )
+
+    return render_template(
+        "notifications.html",
+        notifications=user_notifications
+    )
+
+
+@app.route("/audit-logs")
+@require_roles(1, 3)
+def audit_logs():
+    logs = (
+        AuditLog.query
+        .order_by(AuditLog.CreatedAt.desc())
+        .all()
+    )
+
+    return render_template(
+        "audit_logs.html",
+        logs=logs
+    )
 
     
+def create_audit_log(
+    action,
+    record_type,
+    record_id,
+    field_name,
+    old_value,
+    new_value
+):
+    sensitive_fields = {"password", "Password"}
+
+    if field_name in sensitive_fields:
+        old_value = "***MASKED***" if old_value is not None else None
+        new_value = "***MASKED***" if new_value is not None else None
+
+    audit = AuditLog(
+        UserID=session["user_id"],
+        Action=action,
+        RecordType=record_type,
+        RecordID=record_id,
+        FieldName=field_name,
+        OldValue=str(old_value) if old_value is not None else None,
+        NewValue=str(new_value) if new_value is not None else None
+    )
+
+    db.session.add(audit)
+
+
+def create_notification(user_id, message):
+    notification = Notification(
+        UserID=user_id,
+        Message=message
+    )
+
+    db.session.add(notification)
+
 
 @app.route("/manager/requests/<int:request_id>/approve", methods=["POST"])
 @require_roles(3)
@@ -807,12 +906,27 @@ def approve_request(request_id):
         flash("This request has already been processed.")
         return redirect(url_for("manager_requests"))
 
+    old_status = req.Status
     req.Status = "APPROVED"
+
+    create_audit_log(
+        action="UPDATE",
+        record_type="Request",
+        record_id=req.RequestID,
+        field_name="Status",
+        old_value=old_status,
+        new_value=req.Status
+    )
+
+    create_notification(
+       req.RequesterID,
+       f"Your request #{req.RequestID} has been approved."
+    )
+
     db.session.commit()
 
     flash("Request approved.")
     return redirect(url_for("manager_requests"))
-
 
 
 @app.route("/manager/requests/<int:request_id>/reject", methods=["POST"])
@@ -839,14 +953,40 @@ def reject_request(request_id):
         flash("Rejection reason is required.")
         return redirect(url_for("manager_requests"))
 
+    old_status = req.Status
+    old_rejection_reason = req.RejectionReason
+
     req.Status = "REJECTED"
     req.RejectionReason = rejection_reason
+
+    create_audit_log(
+        action="UPDATE",
+        record_type="Request",
+        record_id=req.RequestID,
+        field_name="Status",
+        old_value=old_status,
+        new_value=req.Status
+    )
+
+    create_audit_log(
+        action="UPDATE",
+        record_type="Request",
+        record_id=req.RequestID,
+        field_name="RejectionReason",
+        old_value=old_rejection_reason,
+        new_value=req.RejectionReason
+    )
+
+    create_notification(
+       req.RequesterID,
+       f"Your request #{req.RequestID} has been rejected. "
+       f"Reason: {rejection_reason}"
+    )
 
     db.session.commit()
 
     flash("Request rejected.")
     return redirect(url_for("manager_requests"))
-
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

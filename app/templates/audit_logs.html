@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AATS | Audit Logs</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        <h1>Audit Logs</h1>
+
+        {% if logs %}
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Record</th>
+                        <th>Record ID</th>
+                        <th>Field</th>
+                        <th>Old Value</th>
+                        <th>New Value</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for log in logs %}
+
+                    <tr>
+                        <td>{{ log.AuditID }}</td>
+                        <td>{{ log.UserID }}</td>
+                        <td>{{ log.Action }}</td>
+                        <td>{{ log.RecordType }}</td>
+                        <td>{{ log.RecordID }}</td>
+                        <td>{{ log.FieldName }}</td>
+                        <td>{{ log.OldValue or "-" }}</td>
+                        <td>{{ log.NewValue or "-" }}</td>
+                        <td>{{ log.CreatedAt }}</td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+            <p>No audit records found.</p>
+
+        {% endif %}
+
+        <div class="actions">
+
+            <a href="{{ url_for('home') }}" class="btn">
+                Back to Home
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

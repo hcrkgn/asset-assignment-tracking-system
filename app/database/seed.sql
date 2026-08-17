@@ -56,4 +56,4 @@ INSERT INTO users
 VALUES
 ('Admin User', 'admin@aats.com', '$2b$12$8tJC/X3Q679E/QMAPPx3Ze.PPLzyJEz8pMEE5QyhSI73PgtQUNlGW', 1, 1),
 ('Ayla Ozturk', 'ayla@aats.com', '$2b$12$d7Z08.opw.lZMFuRljRjgu4Hn5KZRvdfdpIjl6n.jbbkcaVrKF8Gm', 2, 5),
-('Ayşe Demir', 'ayse@aats.com', '$2b$12$tBgosoHMzH5LT832P47opO6nDdcjrA28qqTD53w0pDzyujuu2lo/e', 4, 3);
+('Ayşe Demir', 'ayse@aats.com', '$2b$12$tBgosoHMzH5LT832P47opO6nDdcjrA28qqTD53w0pDzyujuu2lo/e', 4, 5);

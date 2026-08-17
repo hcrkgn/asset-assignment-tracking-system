@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AATS | Notifications</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        <h1>Notifications</h1>
+
+        {% if notifications %}
+
+            <div class="notifications-list">
+
+                {% for notification in notifications %}
+
+                    <div class="notification-card {% if not notification.IsRead %}unread{% endif %}">
+
+                        <p class="notification-message">
+                            {{ notification.Message }}
+                        </p>
+
+                        <span class="notification-date">
+                            {{ notification.CreatedAt }}
+                        </span>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <p class="empty-message">
+                No notifications.
+            </p>
+
+        {% endif %}
+
+        <div class="actions">
+            <a href="{{ url_for('home') }}" class="btn">
+                Back to Home
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
