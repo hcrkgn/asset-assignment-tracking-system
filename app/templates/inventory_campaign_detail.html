@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AATS | Inventory Campaign</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+    <script
+        src="https://unpkg.com/html5-qrcode"
+        type="text/javascript"
+    ></script>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div
+        class="card"
+        id="inventory-page"
+        data-campaign-id="{{ campaign.CampaignID }}"
+    >
+
+        <h1>Inventory Campaign #{{ campaign.CampaignID }}</h1>
+
+        <p>
+            <strong>Location:</strong>
+            {{ location.LocationName }}
+        </p>
+
+        <p>
+            <strong>Status:</strong>
+            {{ campaign.Status }}
+        </p>
+
+        <p>
+            <strong>Created:</strong>
+            {{ campaign.CreatedAt }}
+        </p>
+
+        {% if campaign.Status == "OPEN" %}
+
+            <hr>
+
+            <h2>Scan Assets</h2>
+
+            <p>
+                Scan the QR code of each asset in this location.
+            </p>
+
+            <button
+                type="button"
+                id="start-scan"
+                class="btn btn-primary"
+            >
+                Scan QR
+            </button>
+
+            <div
+                id="qr-reader"
+                style="width: 100%; max-width: 500px; margin-top: 20px;"
+            ></div>
+
+            <p id="scan-result"></p>
+
+        {% else %}
+
+            <p class="empty-message">
+                This campaign is closed.
+            </p>
+
+        {% endif %}
+
+        <hr>
+
+        <h2>Scanned Assets</h2>
+
+        {% if scans %}
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Asset ID</th>
+                            <th>Status</th>
+                            <th>Scanned At</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                    {% for scan in scans %}
+
+                        <tr>
+                            <td>{{ scan.AssetID }}</td>
+                            <td>{{ scan.ScanStatus }}</td>
+                            <td>{{ scan.ScannedAt }}</td>
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <p class="empty-message">
+                No assets have been scanned yet.
+            </p>
+
+        {% endif %}
+
+        <br>
+
+        <a
+            href="{{ url_for('inventory_campaigns') }}"
+            class="btn"
+        >
+            Back to Campaigns
+        </a>
+
+    </div>
+
+</div>
+
+
+{% if campaign.Status == "OPEN" %}
+
+<script>
+
+    const page = document.getElementById("inventory-page");
+    const campaignId = page.dataset.campaignId;
+
+    const startButton = document.getElementById("start-scan");
+    const readerElement = document.getElementById("qr-reader");
+    const resultElement = document.getElementById("scan-result");
+
+    let scanner = null;
+    let scanning = false;
+
+    startButton.addEventListener("click", function () {
+
+        if (scanning) {
+            return;
+        }
+
+        scanner = new Html5Qrcode("qr-reader");
+        scanning = true;
+
+        resultElement.textContent = "Camera is starting...";
+
+        scanner.start(
+            { facingMode: "environment" },
+
+            {
+                fps: 10,
+                qrbox: {
+                    width: 250,
+                    height: 250
+                }
+            },
+
+            function (decodedText) {
+
+                const assetId = parseInt(decodedText);
+
+                if (!assetId) {
+                    resultElement.textContent =
+                        "Invalid QR code.";
+                    return;
+                }
+
+                scanner.stop()
+                    .then(function () {
+
+                        scanning = false;
+
+                        return fetch(
+                            `/inventory/${campaignId}/scan`,
+                            {
+                                method: "POST",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/x-www-form-urlencoded"
+                                },
+
+                                body: `AssetID=${assetId}`
+                            }
+                        );
+                    })
+
+                    .then(function (response) {
+
+                        return response.json()
+                            .then(function (data) {
+
+                                return {
+                                    status: response.status,
+                                    data: data
+                                };
+
+                            });
+
+                    })
+
+                    .then(function (result) {
+
+                        console.log(
+                            "HTTP Status:",
+                            result.status
+                        );
+
+                        console.log(result.data);
+
+                        resultElement.textContent =
+                            result.data.message;
+
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 1500);
+
+                    })
+
+                    .catch(function (error) {
+
+                        console.error(error);
+
+                        resultElement.textContent =
+                            "Connection error. Please try again.";
+
+                    });
+
+            },
+
+            function () {
+                // QR code not detected yet.
+            }
+
+        )
+
+        .catch(function (error) {
+
+            scanning = false;
+
+            console.error(error);
+
+            resultElement.textContent =
+                "Camera could not be started. Please allow camera access.";
+
+        });
+
+    });
+
+</script>
+
+{% endif %}
+
+</body>
+</html>

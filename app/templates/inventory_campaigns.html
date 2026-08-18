@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AATS | Inventory Campaigns</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        <h1>Inventory Count</h1>
+
+        <h2>Create Inventory Campaign</h2>
+
+        <form method="POST" action="{{ url_for('create_inventory_campaign') }}">
+
+            <label for="LocationID">
+                Location
+            </label>
+
+            <select name="LocationID" id="LocationID" required>
+
+                <option value="">
+                    Select location
+                </option>
+
+                {% for location in locations %}
+
+                    <option value="{{ location.LocationID }}">
+                        {{ location.LocationName }}
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+            <br><br>
+
+            <button type="submit" class="btn btn-primary">
+                Start Campaign
+            </button>
+
+        </form>
+
+        <hr>
+
+        <h2>Campaigns</h2>
+
+        {% if campaigns %}
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                    {% for campaign in campaigns %}
+
+                        <tr>
+
+                            <td>
+                                {{ campaign.CampaignID }}
+                            </td>
+
+                            <td>
+                                {% for location in locations %}
+                                    {% if location.LocationID == campaign.LocationID %}
+                                        {{ location.LocationName }}
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+
+                            <td>
+                                {{ campaign.Status }}
+                            </td>
+
+                            <td>
+                                {{ campaign.CreatedAt }}
+                            </td>
+
+                            <td>
+                                <a
+                                    href="{{ url_for(
+                                        'inventory_campaign_detail',
+                                        campaign_id=campaign.CampaignID
+                                    ) }}"
+                                    class="btn"
+                                >
+                                    Open
+                                </a>
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <p class="empty-message">
+                No inventory campaigns found.
+            </p>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+</body>
+</html>

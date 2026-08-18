@@ -1,5 +1,11 @@
 import os
 import uuid       
+
+import io # noqa: F401
+import qrcode # noqa: F401
+
+from datetime import datetime
+
 from datetime import timedelta
 
 from sqlalchemy.exc import IntegrityError
@@ -17,8 +23,10 @@ from flask import (
     request,
     session,
     url_for,
+    send_file, 
 )
 
+from app.utils.qr import generate_asset_qr 
 from app.utils.security import check_password
 from flask_migrate import Migrate
 from app.database.db import db
@@ -40,6 +48,9 @@ from app.models.request_model import Request
 from app.models.department_model import Department # noqa: F401
 from app.models.audit_log_model import AuditLog 
 from app.models.notification_model import Notification 
+from app.models.inventory_campaign_model import InventoryCampaign 
+from app.models.inventory_scan_model import InventoryScan 
+
 
 
 load_dotenv()
@@ -635,6 +646,23 @@ def asset_detail(asset_id):
     return render_template("asset_detail.html", asset=asset)
 
 
+@app.route("/assets/<int:asset_id>/qr")
+@require_roles(1, 2, 3, 4)
+def asset_qr(asset_id):
+    asset = db.session.get(Asset, asset_id)
+
+    if not asset:
+        return render_template("404.html"), 404
+
+    qr_image = generate_asset_qr(asset.AssetID)
+
+    return send_file(
+        qr_image,
+        mimetype="image/png",
+        download_name=f"asset-{asset.AssetID}-qr.png"
+    )
+
+
 
 
 @app.route("/admin")
@@ -987,6 +1015,224 @@ def reject_request(request_id):
 
     flash("Request rejected.")
     return redirect(url_for("manager_requests"))
+
+
+
+@app.route("/inventory")
+@require_roles(2, 3)
+def inventory_campaigns():
+    campaigns = (
+        InventoryCampaign.query
+        .order_by(InventoryCampaign.CreatedAt.desc())
+        .all()
+    )
+
+    locations = Location.query.order_by(Location.LocationName).all()
+
+    return render_template(
+        "inventory_campaigns.html",
+        campaigns=campaigns,
+        locations=locations
+    )
+
+
+@app.route("/inventory/create", methods=["POST"])
+@require_roles(2, 3)
+def create_inventory_campaign():
+    location_id = request.form.get("LocationID", type=int)
+
+    if not location_id:
+        flash("Location is required.")
+        return redirect(url_for("inventory_campaigns"))
+
+    location = db.session.get(Location, location_id)
+
+    if not location:
+        flash("Location not found.")
+        return redirect(url_for("inventory_campaigns"))
+
+    existing_campaign = (
+        InventoryCampaign.query
+        .filter_by(
+            LocationID=location_id,
+            Status="OPEN"
+        )
+        .first()
+    )
+
+    if existing_campaign:
+        flash("There is already an open campaign for this location.")
+        return redirect(url_for("inventory_campaigns"))
+
+    campaign = InventoryCampaign(
+        LocationID=location_id,
+        CreatedBy=session["user_id"],
+        Status="OPEN"
+    )
+
+    db.session.add(campaign)
+    db.session.commit()
+
+    flash("Inventory campaign created.")
+    return redirect(
+        url_for(
+            "inventory_campaign_detail",
+            campaign_id=campaign.CampaignID
+        )
+    )
+
+
+@app.route("/inventory/<int:campaign_id>")
+@require_roles(2, 3)
+def inventory_campaign_detail(campaign_id):
+    campaign = db.session.get(
+        InventoryCampaign,
+        campaign_id
+    )
+
+    if not campaign:
+        flash("Inventory campaign not found.")
+        return redirect(url_for("inventory_campaigns"))
+
+    scans = (
+        InventoryScan.query
+        .filter_by(CampaignID=campaign.CampaignID)
+        .order_by(InventoryScan.ScannedAt.desc())
+        .all()
+    )
+
+    location = db.session.get(Location, campaign.LocationID)
+
+    return render_template(
+        "inventory_campaign_detail.html",
+        campaign=campaign,
+        location=location,
+        scans=scans
+    )
+
+
+@app.route(
+    "/inventory/<int:campaign_id>/scan",
+    methods=["POST"]
+)
+@require_roles(2, 3)
+def inventory_scan(campaign_id):
+    campaign = db.session.get(
+        InventoryCampaign,
+        campaign_id
+    )
+
+    if not campaign:
+        return jsonify({
+            "success": False,
+            "message": "Inventory campaign not found."
+        }), 404
+
+    if campaign.Status != "OPEN":
+        return jsonify({
+            "success": False,
+            "message": "This inventory campaign is closed."
+        }), 400
+
+    asset_id = request.form.get("AssetID", type=int)
+
+    if not asset_id:
+        return jsonify({
+            "success": False,
+            "message": "Asset ID is required."
+        }), 400
+
+    asset = db.session.get(Asset, asset_id)
+
+    if not asset:
+        return jsonify({
+            "success": False,
+            "message": "Asset not found."
+        }), 404
+
+    existing_scan = (
+        InventoryScan.query
+        .filter_by(
+            CampaignID=campaign.CampaignID,
+            AssetID=asset.AssetID
+        )
+        .first()
+    )
+
+    if existing_scan:
+        return jsonify({
+            "success": False,
+            "status": "DUPLICATE",
+            "message": "This asset has already been scanned."
+        }), 409
+
+    if asset.LocationID != campaign.LocationID:
+        scan = InventoryScan(
+            CampaignID=campaign.CampaignID,
+            AssetID=asset.AssetID,
+            ScanStatus="WRONG_LOCATION"
+        )
+
+        db.session.add(scan)
+        db.session.commit()
+
+        return jsonify({
+            "success": False,
+            "status": "WRONG_LOCATION",
+            "message": "This asset belongs to another location."
+        }), 400
+
+    scan = InventoryScan(
+        CampaignID=campaign.CampaignID,
+        AssetID=asset.AssetID,
+        ScanStatus="FOUND"
+    )
+
+    db.session.add(scan)
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "status": "FOUND",
+        "message": "Asset scanned successfully.",
+        "asset_id": asset.AssetID
+    }), 200
+
+
+
+@app.route(
+    "/inventory/<int:campaign_id>/close",
+    methods=["POST"]
+)
+@require_roles(2, 3)
+def close_inventory_campaign(campaign_id):
+    campaign = db.session.get(
+        InventoryCampaign,
+        campaign_id
+    )
+
+    if not campaign:
+        return jsonify({
+            "success": False,
+            "message": "Inventory campaign not found."
+        }), 404
+
+    if campaign.Status != "OPEN":
+        return jsonify({
+            "success": False,
+            "message": "This inventory campaign is already closed."
+        }), 400
+
+    campaign.Status = "CLOSED"
+    campaign.ClosedAt = datetime.utcnow()
+
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "message": "Inventory campaign closed successfully."
+    }), 200
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

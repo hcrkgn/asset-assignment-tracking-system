@@ -185,6 +185,14 @@
                 </a>
 
                 <a
+                    href="{{ url_for('asset_qr', asset_id=asset.AssetID) }}"
+                    target="_blank"
+                    class="btn"
+                >
+                    QR
+                </a>
+
+                <a
                     href="{{ url_for('edit_asset', asset_id=asset.AssetID) }}"
                     class="btn btn-edit"
                 >

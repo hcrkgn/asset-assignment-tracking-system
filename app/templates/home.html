@@ -46,6 +46,12 @@
                 </a>
             {% endif %}
 
+            {% if session.get("role_id") in [2, 3] %}
+                <a href="{{ url_for('inventory_campaigns') }}" class="btn">
+                   Inventory Count
+                </a>
+            {% endif %}
+
         </div>
 
         <hr>
