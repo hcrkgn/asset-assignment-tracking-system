@@ -31,7 +31,7 @@ from app.utils.security import check_password
 from flask_migrate import Migrate
 from app.database.db import db
 from app.utils.auth import require_roles
-
+from app.utils.maintenance import calculate_next_maintenance # noqa: F401
 
 from app.models.login_attempt_model import (
     clear_login_attempts,
@@ -211,6 +211,7 @@ def create_asset():
             invoice_filename = (
                 f"{uuid.uuid4().hex}_{secure_filename(invoice_file.filename)}"
             )
+
             invoice_file.save(
                 os.path.join(UPLOAD_FOLDER, invoice_filename)
             )
@@ -223,9 +224,31 @@ def create_asset():
             warranty_filename = (
                 f"{uuid.uuid4().hex}_{secure_filename(warranty_file.filename)}"
             )
+
             warranty_file.save(
                 os.path.join(UPLOAD_FOLDER, warranty_filename)
             )
+
+        # Maintenance information
+        maintenance_period = request.form.get(
+            "MaintenancePeriodMonths",
+            type=int
+        )
+
+        last_maintenance_date = request.form.get(
+            "LastMaintenanceDate"
+        )
+
+        if last_maintenance_date:
+            last_maintenance_date = datetime.strptime(
+                last_maintenance_date,
+                "%Y-%m-%d"
+            ).date()
+
+        next_maintenance_date = calculate_next_maintenance(
+            last_maintenance_date,
+            maintenance_period
+        )
 
         asset = Asset(
             Code=request.form["Code"].strip(),
@@ -244,6 +267,9 @@ def create_asset():
             Notes=request.form.get("Notes", "").strip() or None,
             InvoiceFile=invoice_filename,
             WarrantyFile=warranty_filename,
+            MaintenancePeriodMonths=maintenance_period,
+            LastMaintenanceDate=last_maintenance_date,
+            NextMaintenanceDate=next_maintenance_date,
         )
 
         try:
@@ -265,7 +291,6 @@ def create_asset():
         categories=categories,
         locations=locations
     )
-
 
 
 @app.route("/assignments")

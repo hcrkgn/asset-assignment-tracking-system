@@ -16,6 +16,22 @@ services:
       db:
         condition: service_healthy
 
+  scheduler:
+    build: .
+    container_name: aats_scheduler
+    volumes:
+      - .:/app
+    environment:
+      MYSQL_HOST: db
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-aats_db}
+      MYSQL_USER: ${MYSQL_USER:-aats_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-aats_dev_password}
+      SECRET_KEY: ${SECRET_KEY:-aats_development_only_secret_key}
+    depends_on:
+      db:
+        condition: service_healthy
+    command: python -u -m app.jobs.maintenance_scheduler
+
   db:
     image: mysql:8.0
     container_name: aats_db

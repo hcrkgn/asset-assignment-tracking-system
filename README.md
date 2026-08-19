@@ -25,7 +25,10 @@ The system is used to manage company assets, employee assignments, maintenance r
 - Stage 0 – Analysis and Design (Completed)
 - Stage 1 – Project Setup and Authentication (Completed)
 - Stage 2 – Asset Card and List (Completed)
-- Stage 3 – Assignment and Return (In Progress)
+- Stage 3 – Assignment and Return (Completed)
+- Stage 4 – Requests, approval flow, audit trail (Completed)
+- Stage 5 – QR labels and inventory count (Completed)
+- Stage 6 – Maintenance plan and scheduled job (Completed)
 
 ## Documentation
 

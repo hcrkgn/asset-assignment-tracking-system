@@ -31,6 +31,10 @@ class Asset(db.Model):
     PurchasePrice = db.Column(db.Numeric(10, 2))
     WarrantyEnd = db.Column(db.Date)
 
+    MaintenancePeriodMonths = db.Column(db.Integer)
+    LastMaintenanceDate = db.Column(db.Date)
+    NextMaintenanceDate = db.Column(db.Date)
+
     Status = db.Column(db.String(50), nullable=False)
     Notes = db.Column(db.Text)
 
