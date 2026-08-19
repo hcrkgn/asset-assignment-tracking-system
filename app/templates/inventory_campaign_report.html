@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>AATS | Inventory Report</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        <h1>Inventory Difference Report</h1>
+
+        <p>
+            <strong>Campaign:</strong>
+            #{{ campaign.CampaignID }}
+        </p>
+
+        <p>
+            <strong>Location:</strong>
+            {{ location.LocationName }}
+        </p>
+
+        <p>
+            <strong>Status:</strong>
+            {{ campaign.Status }}
+        </p>
+
+        <hr>
+
+        <h2>Summary</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Result</th>
+                    <th>Count</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td>Found</td>
+                    <td>{{ found_assets|length }}</td>
+                </tr>
+
+                <tr>
+                    <td>Missing</td>
+                    <td>{{ missing_assets|length }}</td>
+                </tr>
+
+                <tr>
+                    <td>Wrong Location</td>
+                    <td>{{ wrong_location_assets|length }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <hr>
+
+        <h2>Found Assets</h2>
+
+        {% if found_assets %}
+
+            <ul>
+                {% for asset in found_assets %}
+                    <li>
+                        {{ asset.Code }} - {{ asset.AssetName }}
+                    </li>
+                {% endfor %}
+            </ul>
+
+        {% else %}
+
+            <p class="empty-message">
+                No assets were found.
+            </p>
+
+        {% endif %}
+
+        <h2>Missing Assets</h2>
+
+        {% if missing_assets %}
+
+            <ul>
+                {% for asset in missing_assets %}
+                    <li>
+                        {{ asset.Code }} - {{ asset.AssetName }}
+                    </li>
+                {% endfor %}
+            </ul>
+
+        {% else %}
+
+            <p class="empty-message">
+                No missing assets.
+            </p>
+
+        {% endif %}
+
+        <h2>Wrong Location</h2>
+
+        {% if wrong_location_assets %}
+
+            <ul>
+                {% for asset in wrong_location_assets %}
+                    <li>
+                        {{ asset.Code }} - {{ asset.AssetName }}
+                    </li>
+                {% endfor %}
+            </ul>
+
+        {% else %}
+
+            <p class="empty-message">
+                No wrong-location assets.
+            </p>
+
+        {% endif %}
+
+        <br>
+
+        <a
+            href="{{ url_for('inventory_campaigns') }}"
+            class="btn"
+        >
+            Back to Campaigns
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+</html>

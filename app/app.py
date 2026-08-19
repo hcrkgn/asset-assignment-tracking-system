@@ -101,7 +101,7 @@ def home():
 
 
 @app.route("/assets")
-@require_roles(1, 2)
+@require_roles(1, 2, 3)
 def assets():
     search = request.args.get("search", "").strip()
     category_id = request.args.get("category", "").strip()
@@ -269,7 +269,7 @@ def create_asset():
 
 
 @app.route("/assignments")
-@require_roles(1, 2)
+@require_roles(1, 2, 3)
 def assignments():
     assignments = Assignment.query.all()
     return render_template("assignments.html", assignments=assignments)
@@ -372,7 +372,7 @@ def create_assignment():
 
 
 @app.route("/assignments/<int:assignment_id>")
-@require_roles(1, 2)
+@require_roles(1, 2 , 3)
 def assignment_detail(assignment_id):
     assignment = db.session.get(Assignment, assignment_id)
 
@@ -1223,6 +1223,36 @@ def close_inventory_campaign(campaign_id):
             "message": "This inventory campaign is already closed."
         }), 400
 
+    assets = (
+        Asset.query
+        .filter_by(LocationID=campaign.LocationID)
+        .all()
+    )
+
+    scans = (
+        InventoryScan.query
+        .filter_by(CampaignID=campaign.CampaignID)
+        .all()
+    )
+
+    scanned_asset_ids = {
+        scan.AssetID
+        for scan in scans
+        if scan.ScanStatus == "FOUND"
+    }
+
+    missing_assets = [
+        asset.AssetID
+        for asset in assets
+        if asset.AssetID not in scanned_asset_ids
+    ]
+
+    wrong_location_assets = [
+        scan.AssetID
+        for scan in scans
+        if scan.ScanStatus == "WRONG_LOCATION"
+    ]
+
     campaign.Status = "CLOSED"
     campaign.ClosedAt = datetime.utcnow()
 
@@ -1230,8 +1260,87 @@ def close_inventory_campaign(campaign_id):
 
     return jsonify({
         "success": True,
-        "message": "Inventory campaign closed successfully."
+        "message": "Inventory campaign closed successfully.",
+        "report": {
+            "found": len(scanned_asset_ids),
+            "missing": len(missing_assets),
+            "wrong_location": len(wrong_location_assets),
+            "missing_assets": missing_assets,
+            "wrong_location_assets": wrong_location_assets
+        }
     }), 200
+
+
+
+@app.route("/inventory/<int:campaign_id>/report")
+@require_roles(2, 3)
+def inventory_campaign_report(campaign_id):
+    campaign = db.session.get(
+        InventoryCampaign,
+        campaign_id
+    )
+
+    if not campaign:
+        return render_template("404.html"), 404
+
+    location = db.session.get(
+        Location,
+        campaign.LocationID
+    )
+
+    assets = (
+        Asset.query
+        .filter_by(LocationID=campaign.LocationID)
+        .all()
+    )
+
+    scans = (
+        InventoryScan.query
+        .filter_by(CampaignID=campaign.CampaignID)
+        .all()
+    )
+
+    found_ids = {
+        scan.AssetID
+        for scan in scans
+        if scan.ScanStatus == "FOUND"
+    }
+
+    found_assets = [
+        asset
+        for asset in assets
+        if asset.AssetID in found_ids
+    ]
+
+    missing_assets = [
+        asset
+        for asset in assets
+        if asset.AssetID not in found_ids
+    ]
+
+    wrong_location_ids = {
+        scan.AssetID
+        for scan in scans
+        if scan.ScanStatus == "WRONG_LOCATION"
+    }
+
+    wrong_location_assets = (
+        Asset.query
+        .filter(Asset.AssetID.in_(wrong_location_ids))
+        .all()
+        if wrong_location_ids
+        else []
+    )
+
+    return render_template(
+        "inventory_campaign_report.html",
+        campaign=campaign,
+        location=location,
+        found_assets=found_assets,
+        missing_assets=missing_assets,
+        wrong_location_assets=wrong_location_assets
+    )
+
 
 
 if __name__ == "__main__":

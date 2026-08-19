@@ -62,6 +62,14 @@
                 Scan QR
             </button>
 
+            <button
+                type="button"
+                id="close-campaign"
+                class="btn btn-delete"
+            >
+               Close Campaign
+            </button>
+
             <div
                 id="qr-reader"
                 style="width: 100%; max-width: 500px; margin-top: 20px;"
@@ -123,6 +131,15 @@
 
         <br>
 
+        {% if campaign.Status == "CLOSED" %}
+            <a
+              href="{{ url_for('inventory_campaign_report', campaign_id=campaign.CampaignID) }}"
+              class="btn btn-primary"
+            >
+              View Report
+            </a>
+        {% endif %}
+
         <a
             href="{{ url_for('inventory_campaigns') }}"
             class="btn"
@@ -145,6 +162,7 @@
     const startButton = document.getElementById("start-scan");
     const readerElement = document.getElementById("qr-reader");
     const resultElement = document.getElementById("scan-result");
+    const closeButton = document.getElementById("close-campaign");
 
     let scanner = null;
     let scanning = false;
@@ -262,6 +280,73 @@
         });
 
     });
+
+
+    closeButton.addEventListener("click", function () {
+
+    const confirmed = confirm(
+        "Are you sure you want to close this inventory campaign?"
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    closeButton.disabled = true;
+    resultElement.textContent =
+        "Closing inventory campaign...";
+
+    fetch(`/inventory/${campaignId}/close`, {
+        method: "POST"
+    })
+        .then(function (response) {
+
+            return response.json()
+                .then(function (data) {
+
+                    return {
+                        status: response.status,
+                        data: data
+                    };
+
+                });
+
+        })
+        .then(function (result) {
+
+            console.log(
+                "HTTP Status:",
+                result.status
+            );
+
+            console.log(result.data);
+
+            if (result.data.success) {
+
+                window.location.href =
+                    `/inventory/${campaignId}/report`;
+
+                return;
+            }
+
+            closeButton.disabled = false;
+
+            resultElement.textContent =
+                result.data.message;
+
+        })
+        .catch(function (error) {
+
+            console.error(error);
+
+            closeButton.disabled = false;
+
+            resultElement.textContent =
+                "Connection error. Please try again.";
+
+        });
+
+});
 
 </script>
 
