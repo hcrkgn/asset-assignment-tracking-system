@@ -24,14 +24,18 @@ from flask import (
     session,
     url_for,
     send_file, 
+    Response,
 )
 
 from app.utils.qr import generate_asset_qr 
 from app.utils.security import check_password
+from app.utils.export import export_assets_to_csv
+from app.utils.import_csv import import_assets_from_csv
+
 from flask_migrate import Migrate
 from app.database.db import db
 from app.utils.auth import require_roles
-from app.utils.maintenance import calculate_next_maintenance # noqa: F401
+from app.utils.maintenance import calculate_next_maintenance 
 
 from app.models.login_attempt_model import (
     clear_login_attempts,
@@ -291,6 +295,68 @@ def create_asset():
         categories=categories,
         locations=locations
     )
+
+
+@app.route("/assets/export/csv")
+@require_roles(1, 2)
+def export_assets_csv():
+    assets = Asset.query.order_by(Asset.AssetID).all()
+
+    csv_data = export_assets_to_csv(assets)
+
+    return Response(
+        csv_data,
+        mimetype="text/csv; charset=utf-8",
+        headers={
+            "Content-Disposition": "attachment; filename=assets.csv"
+        },
+    )
+
+
+
+@app.route("/assets/import/csv", methods=["GET", "POST"])
+@require_roles(1, 2)
+def import_assets_csv():
+    if request.method == "POST":
+        file = request.files.get("file")
+
+        if not file or not file.filename:
+            flash("Please select a CSV file.")
+            return redirect(url_for("import_assets_csv"))
+
+        if not file.filename.lower().endswith(".csv"):
+            flash("Only CSV files are allowed.")
+            return redirect(url_for("import_assets_csv"))
+
+        try:
+            content = file.read()
+
+            imported_count, errors = import_assets_from_csv(content)
+
+            if errors:
+                flash(
+                    f"{imported_count} row(s) imported successfully. "
+                    f"{len(errors)} row(s) failed."
+                )
+
+                for error in errors:
+                    flash(
+                        f"Row {error['row']}: {error['error']}"
+                    )
+            else:
+                flash(
+                    f"{imported_count} row(s) imported successfully."
+                )
+
+        except Exception as error:
+            db.session.rollback()
+            flash(f"Import failed: {error}")
+
+        return redirect(url_for("assets"))
+
+    return render_template("asset_import.html")
+
+
 
 
 @app.route("/assignments")

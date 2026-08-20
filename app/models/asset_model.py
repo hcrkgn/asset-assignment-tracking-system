@@ -29,6 +29,10 @@ class Asset(db.Model):
 
     PurchaseDate = db.Column(db.Date)
     PurchasePrice = db.Column(db.Numeric(10, 2))
+
+    UsefulLifeMonths = db.Column(db.Integer)
+    SalvageValue = db.Column(db.Numeric(10, 2))
+
     WarrantyEnd = db.Column(db.Date)
 
     MaintenancePeriodMonths = db.Column(db.Integer)
