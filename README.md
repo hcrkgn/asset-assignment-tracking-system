@@ -4,9 +4,9 @@
 
 ## About
 
-This project is developed as the Phase 2 internship program.
+This project was developed as part of the Phase 2 internship program.
 
-The system is used to manage company assets, employee assignments, maintenance records, inventory counts, and asset depreciation.
+The system is designed to manage company assets, employee assignments, maintenance records, inventory counts, asset depreciation, requests, and related reports.
 
 ## Technology Stack
 
@@ -19,6 +19,7 @@ The system is used to manage company assets, employee assignments, maintenance r
 - Password Security: bcrypt
 - Testing: pytest
 - Code Quality: Ruff
+- Containerization: Docker
 
 ## Project Status
 
@@ -26,9 +27,23 @@ The system is used to manage company assets, employee assignments, maintenance r
 - Stage 1 – Project Setup and Authentication (Completed)
 - Stage 2 – Asset Card and List (Completed)
 - Stage 3 – Assignment and Return (Completed)
-- Stage 4 – Requests, approval flow, audit trail (Completed)
-- Stage 5 – QR labels and inventory count (Completed)
-- Stage 6 – Maintenance plan and scheduled job (Completed)
+- Stage 4 – Requests, Approval Flow and Audit Trail (Completed)
+- Stage 5 – QR Labels and Inventory Count (Completed)
+- Stage 6 – Maintenance Plan and Scheduled Job (Completed)
+- Stage 7 – Depreciation, Reports, Import and Export (Completed)
+- Stage 8 – Security and Performance Hardening (Completed)
+
+## Running the Project
+
+The project uses Docker Compose for the application and MySQL database.
+
+```bash
+docker compose up --build
+```
+
+After the containers start, the application can be accessed through the configured Flask port.
+
+Environment-specific configuration is stored in `.env`. A `.env.example` file is provided for required environment variables.
 
 ## Documentation
 
@@ -42,3 +57,21 @@ Included documents:
 - Screen Flow
 - Architecture Decision Records (ADR)
 - Acceptance Criteria
+- Security Review
+
+## Security
+
+The application includes several security measures:
+
+- Password hashing with bcrypt
+- Session-based authentication
+- Role-based authorization
+- CSRF protection
+- Brute-force protection and login lockout
+- SQL injection protection
+- XSS protection through template escaping
+- IDOR and authorization checks
+- Secure file upload validation
+- File extension and MIME type validation
+- Upload size limitation
+- Sanitized upload filenames

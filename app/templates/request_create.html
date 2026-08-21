@@ -19,6 +19,7 @@
     {% endwith %}
 
     <form method="POST" action="{{ url_for('create_request') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
         <label for="CategoryID">Category</label>
         <select name="CategoryID" id="CategoryID" required>

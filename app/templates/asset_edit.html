@@ -11,6 +11,7 @@
     <h1>Edit Asset</h1>
 
     <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
         <label>Code</label>
         <input type="text" name="Code" value="{{ asset.Code }}" required>

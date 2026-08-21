@@ -23,6 +23,7 @@
         <h2>Create Inventory Campaign</h2>
 
         <form method="POST" action="{{ url_for('create_inventory_campaign') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <label for="LocationID">
                 Location

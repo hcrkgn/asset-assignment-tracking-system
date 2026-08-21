@@ -27,6 +27,8 @@ from flask import (
     Response,
 )
 
+from flask_wtf.csrf import CSRFProtect
+
 from app.utils.qr import generate_asset_qr 
 from app.utils.security import check_password
 from app.utils.export import export_assets_to_csv
@@ -60,6 +62,7 @@ from app.models.inventory_scan_model import InventoryScan
 load_dotenv()
 
 app = Flask(__name__)
+csrf = CSRFProtect(app)
 app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=30)
 app.config["SESSION_COOKIE_HTTPONLY"] = True
@@ -94,6 +97,22 @@ def allowed_file(filename):
         "." in filename
         and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
     )
+
+ALLOWED_MIME_TYPES = {
+    "pdf": "application/pdf",
+    "jpg": "image/jpeg",
+    "jpeg": "image/jpeg",
+    "png": "image/png",
+}
+
+
+def allowed_mime_type(file):
+    if not file or not file.filename or "." not in file.filename:
+        return False
+
+    extension = file.filename.rsplit(".", 1)[1].lower()
+    return file.mimetype == ALLOWED_MIME_TYPES.get(extension)
+
 
 
 @app.route("/")
@@ -212,6 +231,11 @@ def create_asset():
                 flash("Invalid invoice file type.")
                 return redirect(url_for("create_asset"))
 
+            if not allowed_mime_type(invoice_file):
+                flash("Invalid invoice MIME type.")
+                return redirect(url_for("create_asset"))
+            
+
             invoice_filename = (
                 f"{uuid.uuid4().hex}_{secure_filename(invoice_file.filename)}"
             )
@@ -225,6 +249,11 @@ def create_asset():
                 flash("Invalid warranty file type.")
                 return redirect(url_for("create_asset"))
 
+            if not allowed_mime_type(warranty_file):
+                flash("Invalid warranty MIME type.")
+                return redirect(url_for("create_asset"))
+
+            
             warranty_filename = (
                 f"{uuid.uuid4().hex}_{secure_filename(warranty_file.filename)}"
             )
@@ -241,7 +270,7 @@ def create_asset():
 
         last_maintenance_date = request.form.get(
             "LastMaintenanceDate"
-        )
+        ) or None
 
         if last_maintenance_date:
             last_maintenance_date = datetime.strptime(
