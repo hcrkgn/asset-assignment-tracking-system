@@ -1,0 +1,14 @@
+[35mapp/app.py[m[36m:[m[32m972[m[36m:[m@app.route("/[1;31mnotifications[m")
+[35mapp/app.py[m[36m:[m[32m974[m[36m:[mdef [1;31mnotifications[m():
+[35mapp/app.py[m[36m:[m[32m975[m[36m:[m    user_[1;31mnotifications[m = (
+[35mapp/app.py[m[36m:[m[32m983[m[36m:[m        "[1;31mnotifications[m.html",
+[35mapp/app.py[m[36m:[m[32m984[m[36m:[m        [1;31mnotifications[m=user_[1;31mnotifications[m
+[35mapp/models/notification_model.py[m[36m:[m[32m7[m[36m:[m    __tablename__ = "[1;31mnotifications[m"
+[35mapp/templates/home.html[m[36m:[m[32m33[m[36m:[m            <a href="{{ url_for('[1;31mnotifications[m') }}" class="btn">
+[35mapp/templates/notifications.html[m[36m:[m[32m23[m[36m:[m        {% if [1;31mnotifications[m %}
+[35mapp/templates/notifications.html[m[36m:[m[32m25[m[36m:[m            <div class="[1;31mnotifications[m-list">
+[35mapp/templates/notifications.html[m[36m:[m[32m27[m[36m:[m                {% for notification in [1;31mnotifications[m %}
+[35mapp/templates/notifications.html[m[36m:[m[32m48[m[36m:[m                No [1;31mnotifications[m.
+[35mmigrations/versions/7aacabda9103_add_notifications_table.py[m[36m:[m[32m1[m[36m:[m"""add [1;31mnotifications[m table
+[35mmigrations/versions/7aacabda9103_add_notifications_table.py[m[36m:[m[32m34[m[36m:[m    op.create_table('[1;31mnotifications[m',
+[35mmigrations/versions/7aacabda9103_add_notifications_table.py[m[36m:[m[32m48[m[36m:[m    op.drop_table('[1;31mnotifications[m')

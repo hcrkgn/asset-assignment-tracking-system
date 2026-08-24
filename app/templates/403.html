@@ -1,12 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>403 | Forbidden</title>
+  <meta charset="UTF-8">
+  <title>403 | Forbidden</title>
+
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/style.css') }}"
+  >
 </head>
+
 <body>
-    <h1>403 - Forbidden</h1>
-    <p>You do not have permission to view this page.</p>
-    <a href="{{ url_for('home') }}">Return to Home</a>
+
+  <div class="container">
+    <div class="card error-card">
+
+      <h1>403 - Forbidden</h1>
+
+      <p>
+        You do not have permission to view this page.
+      </p>
+
+      <div class="actions">
+        <a
+          href="{{ url_for('home') }}"
+          class="btn btn-secondary"
+        >
+          Back to Home
+        </a>
+      </div>
+
+    </div>
+  </div>
+
 </body>
 </html>

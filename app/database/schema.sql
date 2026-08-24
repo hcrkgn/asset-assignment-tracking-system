@@ -117,3 +117,25 @@ CREATE TABLE login_attempts (
     UpdatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP
 );
+
+CREATE TABLE movements (
+    MovementID INT NOT NULL AUTO_INCREMENT,
+    AssetID INT NOT NULL,
+    AssignmentID INT NULL,
+    UserID INT NULL,
+    MovementType VARCHAR(30) NOT NULL,
+    Quantity INT NOT NULL DEFAULT 1,
+    MovementDate DATE NOT NULL,
+    Note TEXT NULL,
+
+    PRIMARY KEY (MovementID),
+
+    FOREIGN KEY (AssetID)
+        REFERENCES assets(AssetID),
+
+    FOREIGN KEY (AssignmentID)
+        REFERENCES assignments(AssignmentID),
+
+    FOREIGN KEY (UserID)
+        REFERENCES users(UserID)
+);

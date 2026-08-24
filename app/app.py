@@ -410,7 +410,7 @@ def create_assignment():
             flash("Asset not found.")
             return redirect(url_for("create_assignment"))
 
-        if asset.Status in ["IN MAINTENANCE", "SCRAPPED"]:
+        if asset.Status in ["Maintenance", "Faulty"]:
             flash("This asset cannot be assigned.")
             return redirect(url_for("create_assignment"))
 
@@ -422,7 +422,7 @@ def create_assignment():
             flash("An individual asset can only be assigned as 1.")
             return redirect(url_for("create_assignment"))
 
-        if asset.AssetType == "Quantity" and quantity > asset.Quantity:
+        if asset.AssetType == "Consumable" and quantity > asset.Quantity:
             flash("Assignment quantity cannot exceed available quantity.")
             return redirect(url_for("create_assignment"))
 
@@ -461,10 +461,9 @@ def create_assignment():
             db.session.add(movement)
 
             if asset.AssetType == "Individual":
-                 asset.Status = "ASSIGNED"
+                asset.Status = "Assigned"
             else:
-                 asset.Quantity -= quantity
-                
+                asset.Quantity -= quantity
 
             db.session.commit()
 
@@ -478,7 +477,7 @@ def create_assignment():
         return redirect(url_for("assignments"))
 
     assets = Asset.query.filter(
-        Asset.Status.notin_(["IN MAINTENANCE", "SCRAPPED"])
+        Asset.Status.notin_(["Maintenance", "Faulty"])
     ).all()
 
     users = User.query.all()
@@ -802,7 +801,7 @@ def session_info():
 
 
 @app.route("/requests/create", methods=["GET", "POST"])
-@require_roles(3, 4)
+@require_roles(1, 3, 4)
 def create_request():
     if request.method == "POST":
         category_id = request.form.get("CategoryID")
@@ -835,7 +834,7 @@ def create_request():
         manager = (
             User.query
             .filter(
-                User.RoleID == 3,
+                User.RoleID == 2,
                 User.DepartmentID == requester.DepartmentID
             )
             .first()
@@ -864,7 +863,7 @@ def create_request():
 
 
 @app.route("/requests")
-@require_roles(3, 4)
+@require_roles(1, 2, 3, 4)
 def requests_page():
     requests = (
         Request.query
@@ -933,7 +932,7 @@ def logout():
 
 
 @app.route("/manager/requests")
-@require_roles(3)
+@require_roles(2)
 def manager_requests():
     manager = db.session.get(User, session["user_id"])
 
@@ -970,7 +969,7 @@ def manager_requests():
 
 
 @app.route("/notifications")
-@require_roles(3, 4)
+@require_roles(1, 2, 3, 4)
 def notifications():
     user_notifications = (
         Notification.query
@@ -986,7 +985,7 @@ def notifications():
 
 
 @app.route("/audit-logs")
-@require_roles(1, 3)
+@require_roles(1, 2, 3)
 def audit_logs():
     logs = (
         AuditLog.query
@@ -1037,7 +1036,7 @@ def create_notification(user_id, message):
 
 
 @app.route("/manager/requests/<int:request_id>/approve", methods=["POST"])
-@require_roles(3)
+@require_roles(2)
 def approve_request(request_id):
     manager = db.session.get(User, session["user_id"])
     req = db.session.get(Request, request_id)
@@ -1078,7 +1077,7 @@ def approve_request(request_id):
 
 
 @app.route("/manager/requests/<int:request_id>/reject", methods=["POST"])
-@require_roles(3)
+@require_roles(2)
 def reject_request(request_id):
     manager = db.session.get(User, session["user_id"])
     req = db.session.get(Request, request_id)

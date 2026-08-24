@@ -1,0 +1,21 @@
+[33mcommit eb79a7564286b085e3e01eb6dd45fa5d67f63887[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: hcrkgn <hacerakgun003@gmail.com>
+Date:   Fri Aug 21 16:49:44 2026 +0300
+
+     Complete Stage 8 Security and performance hardening
+
+ README.md                              |  43 [32m++++++++++++++++++++++++++++[m[31m----[m
+ app/app.py                             |  31 [32m++++++++++++++++++++++[m[31m-[m
+ app/templates/asset_create.html        |   1 [32m+[m
+ app/templates/asset_edit.html          |   1 [32m+[m
+ app/templates/asset_import.html        |   1 [32m+[m
+ app/templates/assignment_create.html   |   1 [32m+[m
+ app/templates/assignment_edit.html     |   1 [32m+[m
+ app/templates/assignment_return.html   |   1 [32m+[m
+ app/templates/home.html                |   2 [32m++[m
+ app/templates/inventory_campaigns.html |   1 [32m+[m
+ app/templates/login.html               |   1 [32m+[m
+ app/templates/request_create.html      |   1 [32m+[m
+ docs/security-review.md                |  44 [32m+++++++++++++++++++++++++++++++++[m
+ requirements.txt                       | Bin [31m1026[m -> [32m1058[m bytes
+ 14 files changed, 123 insertions(+), 6 deletions(-)

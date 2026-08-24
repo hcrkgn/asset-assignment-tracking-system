@@ -54,7 +54,9 @@
 
     <br>
 
-    <a href="{{ url_for('edit_asset', asset_id=asset.AssetID) }}">
+    <a href="{{ url_for('edit_asset', asset_id=asset.AssetID) }}"
+       class="btn btn-edit"
+    >
         Edit Asset
     </a>
 
@@ -72,7 +74,9 @@
 
     <br><br>
 
-    <a href="{{ url_for('assets') }}">
+    <a href="{{ url_for('assets') }}"
+       class="btn"
+    >
         Back to Assets
     </a>
 

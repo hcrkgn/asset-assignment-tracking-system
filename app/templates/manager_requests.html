@@ -87,6 +87,7 @@
                                 method="POST"
                                 action="{{ url_for('approve_request', request_id=req.RequestID) }}"
                             >
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="approve-button">
                                     Approve
                                 </button>
@@ -104,6 +105,8 @@
                                     placeholder="Rejection reason"
                                     required
                                 >
+
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                                 <button type="submit" class="reject-button">
                                     Reject

@@ -106,6 +106,7 @@
           <a href="{{ url_for('home') }}" class="btn btn-secondary"> Home </a>
         </div>
 
+    <div class="table-container">
         <table>
           <thead>
               <tr>
@@ -176,7 +177,8 @@
             <td>{{ asset.AssetType }}</td>
             <td>{{ asset.Status }}</td>
 
-            <td class="actions">
+            <td>
+                <div class="asset-actions">
                 <a
                     href="{{ url_for('asset_detail', asset_id=asset.AssetID) }}"
                     class="btn btn-view"
@@ -205,10 +207,13 @@
                     class="delete-form"
                     onsubmit="return confirm('Are you sure you want to delete this asset?');"
                 >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-delete">
                         Delete
                     </button>
                 </form>
+
+                </div>    
             </td>
         </tr>
         {% endfor %}
@@ -222,6 +227,7 @@
             </tbody>
             
         </table>
+    </div>
 
         {% if pagination.pages > 1 %}
         <div class="pagination">
